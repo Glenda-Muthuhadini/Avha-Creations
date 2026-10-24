@@ -37,6 +37,10 @@ try {
       assert.equal(await header.locator('.cart-link').count(), 0, `Bag shown in header at ${width}: ${route}`);
       assert.equal(await header.evaluate(element => getComputedStyle(element).position), 'sticky', `Header should be sticky at ${width}: ${route}`);
       assert.equal(await header.evaluate(element => getComputedStyle(element).top), '12px', `Floating header gap at ${width}: ${route}`);
+      for (const bookingLink of await header.getByRole('link', { name: 'Book Now', exact: true }).all()) {
+        assert.match(await bookingLink.getAttribute('href'), /^https:\/\/wa\.me\/27762123234\?/);
+        assert.equal(await bookingLink.getAttribute('target'), '_blank');
+      }
       const logo = page.locator('.site-header .brand--official img');
       await logo.evaluate(image => image.decode());
       await page.evaluate(() => document.fonts.ready);
@@ -77,6 +81,16 @@ try {
   await page.locator('#hair-title').waitFor();
   assert.equal(await page.locator('.hair-service-card').count(), 6);
   assert.equal(await page.locator('.hair-work__gallery img').count(), 6);
+  assert.equal(await page.locator('.site-footer a[href="https://hadiniholdings.co.za"]').textContent(), 'Hadini Holdings');
+
+  await page.goto(origin + '/about');
+  await page.locator('#about-title').waitFor();
+  assert.equal(await page.locator('.about-hero__signature').count(), 0);
+  assert.equal(await page.locator('.about-values article').count(), 4);
+  await page.getByRole('heading', { name: 'From a passion to a purpose.' }).waitFor();
+  await page.getByRole('heading', { name: 'A creative community.' }).waitFor();
+  await page.getByRole('heading', { name: 'Proudly South African.' }).waitFor();
+  assert.equal(await page.locator('.site-header').evaluate(element => getComputedStyle(element).position), 'sticky');
   assert.equal(await page.locator('.site-footer a[href="https://hadiniholdings.co.za"]').textContent(), 'Hadini Holdings');
 
   for (const route of ['/admin', '/admin/products', '/admin/products/new', '/admin/products/123/edit', '/admin/categories', '/admin/services', '/admin/orders', '/admin/orders/123', '/admin/settings']) {
@@ -120,16 +134,37 @@ try {
   await page.goto(origin);
   await page.locator('.showcase-track--products .catalogue-card').first().waitFor();
   assert.equal(await page.locator('.showcase-track--products .catalogue-card').count(), 5);
+  for (const width of [375, 768, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const productTrack = page.locator('.showcase-track--products');
+    const sizing = await productTrack.evaluate(element => {
+      const card = element.querySelector('.catalogue-card--showcase');
+      const image = card.querySelector('.product-photo-link img');
+      const cardRect = card.getBoundingClientRect();
+      const imageRect = image.getBoundingClientRect();
+      const trackStyle = getComputedStyle(element);
+      return {
+        cardWidth: cardRect.width,
+        imageWidth: imageRect.width,
+        imageHeight: imageRect.height,
+        columnWidth: trackStyle.gridAutoColumns,
+        trackWidth: element.clientWidth,
+      };
+    });
+    assert.ok(Math.abs(sizing.imageWidth - sizing.imageHeight) <= 1, `Featured image should be square at ${width}px`);
+    if (width === 375) assert.ok(Math.abs(sizing.cardWidth - sizing.trackWidth) <= 3, 'Mobile featured cards should scroll one at a time');
+  }
   assert.equal(await page.locator('.showcase-track--services .catalogue-card').count(), 6);
   assert.equal(await page.locator('.campaign-hero img').getAttribute('fetchpriority'), 'high');
   assert.equal(await page.locator('.campaign-hero img').getAttribute('loading'), null);
   assert.equal(await page.locator('.hero-signature').count(), 0);
   assert.equal(await page.locator('.campaign-hero').getByRole('link', { name: 'Shop Creations' }).getAttribute('href'), '/shop');
   assert.equal(await page.locator('.campaign-hero').getByRole('link', { name: 'Book Hair Services' }).getAttribute('href'), '/hair-services');
+  await page.setViewportSize({ width: 375, height: 900 });
   for (const selector of ['.showcase-track--products', '.showcase-track--services', '.social-gallery__track']) {
     const track = page.locator(selector);
     assert.ok(await track.evaluate(element => element.scrollWidth > element.clientWidth), `Mobile scrolling: ${selector}`);
-    await track.evaluate(element => { element.scrollLeft = 200; });
+    await track.evaluate(element => { element.scrollLeft = element.clientWidth; });
     await page.waitForTimeout(150);
     assert.ok(await track.evaluate(element => element.scrollLeft > 0));
     await track.evaluate(element => { element.scrollLeft = 0; });

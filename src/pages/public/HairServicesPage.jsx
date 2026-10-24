@@ -43,7 +43,7 @@ export default function HairServicesPage() {
 
   return <div className="hair-page">
     <section className="hair-hero" aria-labelledby="hair-title">
-      <img className="hair-hero__image" src="/images/cornrows.webp" alt="" fetchPriority="high" />
+      <img className="hair-hero__image" src="/images/Glamorous%20Braids%20in%20Golden%20Light.png" alt="" fetchPriority="high" />
       <div className="hair-hero__shade" />
       <div className="container hair-hero__layout">
         <div className="hair-hero__copy">

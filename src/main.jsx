@@ -11,6 +11,7 @@ import './styles/index.css';
 import './styles/home.css';
 import './styles/shop.css';
 import './styles/hair.css';
+import './styles/about.css';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode><ErrorBoundary><BrowserRouter><AuthProvider><BusinessProvider><CartProvider><WishlistProvider><App /></WishlistProvider></CartProvider></BusinessProvider></AuthProvider></BrowserRouter></ErrorBoundary></StrictMode>,

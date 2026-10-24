@@ -3,11 +3,13 @@ import { NavLink, useLocation } from 'react-router-dom';
 import Button from '../common/Button';
 import SocialLinks from './SocialLinks';
 import BrandLogo from '../common/BrandLogo';
+import { useBusiness } from '../../context/BusinessContext';
 
 const links = [['/', 'Home'], ['/shop', 'Shop'], ['/hair-services', 'Hair artistry'], ['/about', 'Our story'], ['/contact', 'Contact']];
 export default function Header() {
   const [open, setOpen] = useState(false);
   const location = useLocation();
+  const { whatsappUrl } = useBusiness();
   const toggle = useRef(null);
   const menuOpen = open === location.key;
   useEffect(() => {
@@ -19,7 +21,7 @@ export default function Header() {
   return <header className="site-header"><div className="container header-inner">
     <BrandLogo />
     <button ref={toggle} className="menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="main-navigation" onClick={() => setOpen(menuOpen ? false : location.key)}>{menuOpen ? 'Close' : 'Menu'}</button>
-    <nav id="main-navigation" className={menuOpen ? 'navigation is-open' : 'navigation'} aria-label="Main navigation">{links.map(([to, label]) => <NavLink key={to} end={to === '/'} to={to}>{label}</NavLink>)}<div className="mobile-socials"><SocialLinks /><Button to="/contact">Book Now</Button></div></nav>
-    <div className="header-actions"><div className="header-socials"><SocialLinks /></div><Button className="header-book" to="/contact">Book Now</Button></div>
+    <nav id="main-navigation" className={menuOpen ? 'navigation is-open' : 'navigation'} aria-label="Main navigation">{links.map(([to, label]) => <NavLink key={to} end={to === '/'} to={to}>{label}</NavLink>)}<div className="mobile-socials"><SocialLinks />{whatsappUrl ? <a className="button" href={whatsappUrl} target="_blank" rel="noreferrer">Book Now</a> : <Button to="/contact">Book Now</Button>}</div></nav>
+    <div className="header-actions"><div className="header-socials"><SocialLinks /></div>{whatsappUrl ? <a className="button header-book" href={whatsappUrl} target="_blank" rel="noreferrer">Book Now</a> : <Button className="header-book" to="/contact">Book Now</Button>}</div>
   </div></header>;
 }
