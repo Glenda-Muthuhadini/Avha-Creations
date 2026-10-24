@@ -2,7 +2,7 @@
 
 AVHA CREATIONS is a handmade fashion, accessories and hair-artistry business based in Olievenhoutbosch, Centurion, South Africa. This application is the foundation for a real commerce platform: a public storefront, a locally persisted shopping bag, a protected business studio, and a Supabase database designed for manual EFT orders.
 
-**Current stage: architecture and application foundation.** The project runs without Supabase credentials and shows intentional branded placeholder states. It does not simulate products, orders, successful payments or administrator access. No live Supabase project has been selected, provisioned or migrated, and the application has not been deployed.
+**Current stage: application foundation plus photographic homepage redesign.** The project runs without Supabase credentials. The homepage includes clearly labelled editorial product/service previews while real catalogue data takes priority when connected. These preview cards lead to enquiries, never the cart or simulated checkout. No orders, successful payments or administrator access are simulated. No live Supabase project has been selected, provisioned or migrated, and the application has not been deployed.
 
 ## Tech stack
 
@@ -16,8 +16,9 @@ AVHA CREATIONS is a handmade fashion, accessories and hair-artistry business bas
 | Supabase PostgreSQL | Catalogue, settings, historical orders and security policies |
 | Node test runner + PGlite | Cart utilities and executable PostgreSQL/RLS tests |
 | Playwright | Browser route, responsive and cart smoke checks |
+| Sharp (development only) | Resize and encode supplied/generated photographs as WebP assets |
 
-Dependencies are pinned in `package.json`; keep `package-lock.json` in source control. Test tools are development dependencies and do not ship in the storefront bundle. No Next.js, card gateway or additional state framework is used.
+Dependencies are pinned in `package.json`; keep `package-lock.json` in source control. Test tools and Sharp are development dependencies and do not ship in the storefront bundle. Sharp is the only dependency added for the homepage redesign. No Next.js, card gateway, icon package, animation library or additional state framework is used.
 
 ## Getting started
 
@@ -62,11 +63,12 @@ The future trusted checkout endpoint will require server-only credentials and se
 ```text
 Browser
   React Router
-    PublicLayout → storefront / catalogue / bag / checkout placeholders
+    PublicLayout → photographic homepage / catalogue / bag / checkout placeholders
     ProtectedAdminRoute → database membership check → AdminLayout
   Context
     CartProvider → validated localStorage selections, estimated totals
     AuthProvider → Supabase session + is_admin RPC
+    BusinessProvider → shared public settings, supplied launch contacts as fallback
   Services → Supabase publishable client
     public catalogue / safe business settings → RLS active read policies
     admin reads / image helpers → database membership RLS
@@ -83,19 +85,23 @@ Frontend route protection improves the interface. Database grants, RLS, a non-ex
 ## Project structure
 
 ```text
-public/                  Favicon, locally bundled fonts and SPA rewrite example
+public/                  Favicon, local fonts, optimised imagery and SPA rewrite example
 src/
+  assets/                Official supplied logo, imported with Vite asset hashing
   components/
     common/              Buttons, page containers, form fields, states, error boundary
     layout/              Public header, mobile navigation, footer and layout
     shop/                Product cards/grid, prices and quantity selector
     hair/                Hair service cards
+    home/                Hero, benefits, journeys, showcases, story, social and contact
     admin/               Protected routes, sidebar, header, layout and status badge
   pages/
     public/              Customer route components
     admin/               Sign in, dashboard, lists and management placeholders
   hooks/                 Resource loading and title/description metadata
-  context/               Authentication and persistent cart
+  context/               Authentication, persistent cart and shared business settings
+  config/                User-supplied public launch contact defaults
+  data/                  Isolated homepage-only preview records (not sellable inventory)
   lib/                   Supabase client and canonical status constants
   services/              Catalogue, auth, orders, uploads, settings and admin access
   utils/                 Cart reducer, Rand formatting, WhatsApp message generation
@@ -108,11 +114,13 @@ supabase/
   admin-setup.example.sql Trusted SQL template for granting/revoking administrators
 docs/checkout-contract.md Next-stage security and transaction requirements
 docs/licenses/           Open Font Licences for bundled typefaces
+docs/image-generation.json Supporting-image provenance and exact generation prompts
+scripts/optimise-image.mjs Reusable non-destructive image resizing/WebP encoding
 tests/                   Unit, PostgreSQL/RLS and browser checks
 .env.example             Empty public configuration template
 ```
 
-Add production photographs under `src/assets/` when available or upload them through the planned image workflow; no unused asset placeholders are needed yet. Add checkout-specific components as that workflow is implemented. Cart drawer and dialogs are also deferred until there is a real interaction requiring them; the cart currently has its own route.
+The supplied hero original is retained in `public/Glamorous Mauve Hat Portrait.png`; the website consumes optimised WebP versions in `public/images/`. Supporting preview images are also local WebP assets. The official supplied logo is imported from `src/assets/avha-logo.png`; browser/mobile icons are served from `public/`. Replace illustrative catalogue imagery with actual AVHA photographs through live catalogue records when available. Add checkout-specific components as that workflow is implemented. Cart drawer and dialogs are deferred until there is a real interaction requiring them; the cart currently has its own route.
 
 ## Supabase setup
 
@@ -135,7 +143,7 @@ The migration targets a **new Supabase PostgreSQL project**, which already provi
 6. Copy the project URL and publishable key into `.env.local`. Restart Vite. Empty but connected catalogues should return empty states rather than configuration errors.
 7. Disable public email signup and anonymous sign-ins for this admin-only Auth deployment. Local `config.toml` already disables both, sets a 12-character minimum password and points Auth at Vite’s local URL; apply equivalent settings separately to the hosted project. Create/invite the owner through the Supabase dashboard. Configure Auth URLs for your eventual domain; no customer accounts or OAuth flow are implemented.
 8. Use `supabase/admin-setup.example.sql` in trusted SQL to grant that exact owner membership. Verify the selected ID/email. Signing up or changing user metadata must never grant administrator privileges.
-9. Configure actual public contact information and delivery settings. Configure banking details privately when preparing checkout. There are no invented contact numbers or bank details.
+9. Configure public contact information and delivery settings. User-supplied launch defaults in `src/config/business.js` include WhatsApp `27762123234` (076 212 3234), the supplied street address and Instagram `@avha_creation`. Nonempty database settings override these defaults. Configure banking details privately when preparing checkout. There are no invented contact numbers or bank details.
 10. Verify Auth sign in, non-admin denial, live RLS, private proof access and Storage behavior on the real development project before any production launch.
 
 For optional local development after installing Docker:
@@ -216,13 +224,13 @@ Future customer uploads must validate scoped order authorization, MIME signature
 
 | Route | Current behavior |
 | --- | --- |
-| `/` | Branded introductory homepage using reusable navigation/layout |
+| `/` | Photographic campaign homepage, dynamic catalogue previews, social/contact sections |
 | `/shop` | Active product query, loading/error/empty states and reusable grid |
 | `/shop/:slug` | Active product details, image gallery and add-to-bag for available products |
 | `/hair-services` | Active hair service query with reusable cards |
 | `/hair-services/:slug` | Service details and contact enquiry link |
 | `/about` | AVHA story grounded in supplied business details |
-| `/contact` | Public contact settings and configured WhatsApp/email links |
+| `/contact` | Shared public settings and supplied contact fallbacks; optional `?creation=` / `?service=` prefill a WhatsApp enquiry |
 | `/cart` | Persistent selections, quantity/remove controls and estimated subtotal |
 | `/checkout` | Explicit next-stage placeholder; no order creation |
 | `/order-success/:orderNumber` | Privacy-preserving placeholder; never fetches by number alone |
@@ -278,7 +286,7 @@ See [docs/checkout-contract.md](docs/checkout-contract.md) for transaction bound
 
 `orderWhatsAppUrl(order, number)` constructs a URL from the **saved** order's item names/quantities/line totals, delivery fee, total, customer name and order/payment reference. It uses the configured store WhatsApp number, encodes the message and rejects missing orders or invalid numbers. Unit tests use clearly isolated test data; no example order is displayed in the application.
 
-The helper is ready but not connected to the checkout placeholder. The contact page can open a general enquiry using public settings when a real number is configured. Opening a link does not send a message; the customer chooses Send in WhatsApp. The application sends no messages automatically.
+The order helper is ready but not connected to the checkout placeholder. General booking/enquiry links in the header, homepage, footer and contact page use the shared public store number, falling back to the supplied `27762123234`. Preview-product/service clicks open Contact with the chosen interest; the WhatsApp link includes that interest. These enquiries are not orders. Opening a link does not send a message; the customer chooses Send in WhatsApp. The application sends no messages automatically.
 
 ## Order and payment statuses
 
@@ -304,13 +312,77 @@ Proof verification is separately `pending`, `confirmed` or `rejected`. SQL const
 
 ## Design, responsiveness and accessibility
 
-The supplied luxury homepage is a visual direction, not an embedded webpage screenshot. The foundation uses espresso/chocolate surfaces, champagne/caramel highlights, cream text, a serif editorial hierarchy and clean body type. The temporary monogram artwork is built in CSS; it is not a substitute for the future product/hair photography and landing-page polish.
+The supplied luxury homepage is a visual direction, not an embedded webpage screenshot. The redesigned homepage uses the supplied woman-in-mauve-hat photograph as its dominant hero, espresso/chocolate gradients, champagne highlights, photographic product/service cards and selective warm glass surfaces. The old abstract monogram artwork and its obsolete styles have been removed. A dedicated local handwritten font renders “Wear your individuality.” in three lines with the fine signature treatment from the reference.
 
-Mobile-first CSS covers mobile, tablet and desktop; navigation becomes a deliberate menu, grids reflow, cart rows wrap and admin navigation changes layout. Semantic landmarks, real links/buttons, labels, a skip link, focus indicators, route-focus handling, keyboard-accessible controls and reduced-motion support are included. Cormorant Garamond and DM Sans Latin WOFF2 assets are bundled in `public/fonts/` with their Open Font Licences in `docs/licenses/`. There are no external font requests; system serif/sans fallbacks cover missing glyphs and loading failures.
+Mobile-first CSS covers mobile, tablet and desktop; navigation becomes a disclosure menu with an Escape-to-close/focus-return behavior, grids reflow, cart rows wrap and admin navigation changes layout. Semantic landmarks, real links/buttons, labels, a skip link, focus indicators, route-focus handling, keyboard-accessible controls and reduced-motion support are included. Cormorant Garamond, DM Sans and Mrs Saint Delafield Latin WOFF2 assets are bundled in `public/fonts/` with their Open Font Licences in `docs/licenses/`. There are no external font requests; system serif/sans fallbacks cover missing glyphs and loading failures.
+
+## Homepage redesign
+
+`HomePage` now composes small dedicated components from `src/components/home/`:
+
+| Component | Purpose |
+| --- | --- |
+| `HeroSection` | Supplied full-width photographic hero, large AVHA wordmark, signature and working shop/hair links |
+| `BrandBenefits` | Four refined line-icon brand promises |
+| `JourneySection` | Clickable photographic shop/hair editorial cards |
+| `CataloguePreview` | Reusable featured-product or hair-service showcase with loading/error/retry and documented preview fallback |
+| `StorySection` | Story copy, large hat portrait and translucent brand-values panel |
+| `SocialGallery` | Cream/blush inspiration gallery linking to the supplied Instagram account |
+| `ContactCTA` | Location/maps, real WhatsApp enquiry and appointment links |
+
+Shared `Header` and `Footer` provide public navigation, SVG line icons and `SocialLinks`. Every public route uses the same `Header` through `PublicLayout`, matching the Shop page's warm translucent background, rounded lower corners, logo sizing, navigation, socials and booking action. There is no shopping-bag icon or cart counter in the header, and the homepage has no separate floating-header variant. Cart functionality remains available on `/cart`. No Facebook page URL was supplied, so its icon is explicitly labelled as an enquiry and opens `/contact#social`; it does not invent a Facebook profile. The contact page explains this fallback. The social gallery is a curated editorial inspiration gallery, **not a live Instagram feed or a claim that generated portraits are AVHA clients**.
+
+### Dynamic content and preview boundaries
+
+`src/services/home.js` reuses the existing catalogue service. It requests featured active records, falls back to active catalogue records if none are featured, and limits the result to five products or six services. Existing Supabase RLS still applies. Real records use the existing `/shop/:slug` and `/hair-services/:slug` links and their database prices/images. No migration, RLS, auth, cart, checkout or admin behavior was replaced for the redesign.
+
+If Supabase is unconfigured or a successful query finds no catalogue content, the home service uses isolated records in `src/data/homePreview.js`. They use the supplied example categories/indicative starting prices and clearly labelled illustrative imagery. These are not SQL seed data, not inventory and never appear as purchasable detail records. Preview cards route to a named Contact enquiry; they cannot be added to the cart. The shop and service catalogue routes keep their real database/empty behavior. A failed request shows an error/retry state rather than silently substituting previews.
+
+`BusinessProvider` shares the existing public-settings service between navigation, footer, Contact and homepage. It merges nonempty public settings over user-supplied launch defaults; an invalid configured WhatsApp number is not converted into a fabricated link. Public settings failures are visible with retry on Contact and the homepage contact section. Banking settings remain private and are never part of this context. Social links currently use supplied code configuration because the existing settings schema has no social URL columns; a future admin social editor will need its own reviewed migration.
+
+### Images and signature assets
+
+- **Supplied hero:** `public/Glamorous Mauve Hat Portrait.png`, preserved without retouching or regeneration. `avha-hero-768.webp`, `avha-hero-1024.webp` and `avha-hero-1536.webp` are resized/encoded derivatives in `public/images/`. The 1536px version is about 120 KB versus the 1.95 MB source PNG. The `<img>` uses `srcSet`, viewport sizes, explicit dimensions and `fetchPriority="high"`; it is not lazy-loaded.
+- **Supporting illustrative images:** `crochet-bag.webp`, `beaded-earrings.webp`, `fascinator.webp`, `crochet-bow.webp`, `braids.webp`, `cornrows.webp`, `wig-installation.webp`, `hair-colour.webp`, `hair-washing.webp`, `custom-styling.webp` and `story-portrait.webp`, all in `public/images/`. Created with the built-in image-generation tool, then resized/encoded without retouching. The exact final prompt set and provenance are retained in [docs/image-generation.json](docs/image-generation.json). These must be replaced by genuine product/client photography before representing specific sellable pieces or client work.
+- **Signature:** `public/fonts/mrs-saint-delafield-latin.woff2`, with [its OFL licence](docs/licenses/Mrs-Saint-Delafield-OFL.txt). The phrase is real selectable HTML text, accessible as “Wear your individuality.”, with a small underline and restrained rotation. No signature text is burned into the hero image.
+- Supporting images are lazy-loaded. Explicit aspect ratios, image dimensions, `object-fit` and deliberate `object-position` values reserve space and protect the important subjects. The original user PNG remains available but is not fetched by the homepage.
+
+To optimise a future asset without overwriting its source:
+
+```sh
+node scripts/optimise-image.mjs path/to/original.png public/images/meaningful-name.webp 800
+```
+
+This tool only resizes and encodes; it does not generate, composite or retouch images. Asset prompts and ownership/provenance documentation should be updated when replacing images.
+
+### Responsive composition and motion
+
+Desktop uses a cinematic 92svh hero (bounded between 720–960px), with copy on the left, an undarkened photographic subject on the right and the signature beside her. Mobile separately crops the image toward the face/hat, fades its lower edge into the copy area and places the signature in the open left area. Two journey cards stack on mobile. Product, service and social tracks use native horizontal scrolling, focusable labelled regions, touch scrolling and scroll snapping; desktop presents five products and six services across the row. The story places imagery before copy on mobile and layers the portrait between copy and the glass panel on desktop. Contact blocks stack on mobile.
+
+`src/styles/home.css` contains the campaign and shared navigation/footer enhancements, imported after the foundation stylesheet. Icon shapes are native SVG in `Icon`, not a new icon dependency. Hover effects use small image zooms, slight lifts and arrow movement. `useScrollReveal` progressively animates sections with IntersectionObserver/Web Animations without hiding content when observers or JavaScript are unavailable. Reduced-motion preferences disable animation/transition effects and cancel active reveals. Full-page and hero screenshots are captured in ignored `test-results/`.
 
 No modal is currently required; implement a focus-managed accessible dialog when adding the future cart drawer or image viewer.
 
 ## SEO foundation and hosting
+
+### Official brand assets
+
+The user-supplied `public/AVHA Creations Monogram Logo.png` is the official logo. `src/assets/avha-logo.png` is an unchanged, byte-for-byte copy, consumed by the shared `BrandLogo` component in the storefront header/footer, admin sidebar and admin sign-in screen. Vite imports and hashes it into `dist/assets/`; no hand-written asset hash is used. Every logo links to `/` and has an accessible name. The original aspect ratio (1727 × 910) is preserved with `width: 100%`, `height: auto` and `object-fit: contain`, with explicit intrinsic dimensions to reserve space. There is no cropping, recolouring, filtering or generated replacement.
+
+The current supplied logo appears without a separate background plate. The shared Shop-style header uses the same logo sizing on every public page: 160px wide on desktop, 135px on mobile and 112px on very narrow screens. It preserves its aspect ratio; footer and business-studio branding keep their own appropriate sizes. The business-studio label remains separate interface text.
+
+The square user-supplied `public/Blush Rose-Gold AVHA Creations Icon.png` is the only favicon/app-icon source. The horizontal logo is never used for browser icons. Resizing with the existing Sharp development dependency preserves the complete icon without cropping or recolouring:
+
+| Asset | Size / use |
+| --- | --- |
+| `public/favicon-16.png` | 16 × 16 browser favicon |
+| `public/favicon-32.png` | 32 × 32 browser favicon |
+| `public/favicon.png` | 48 × 48 browser favicon |
+| `public/apple-touch-icon.png` | 180 × 180 Apple touch icon |
+
+`index.html` declares PNG icon types/sizes, the Apple touch icon and application-name/Apple-title metadata. The old generated `favicon.svg` has been removed. There is no existing web manifest, so none was introduced; this does not add PWA install/offline behavior. Supplied originals remain intact. If a browser retains an older favicon, hard-refresh or reopen the tab to refresh its favicon cache.
+
+The production browser check can be run after a build using `$env:AVHA_TEST_PRODUCTION = '1'; npm.cmd run test:browser` in PowerShell (or `AVHA_TEST_PRODUCTION=1 npm run test:browser` in a POSIX shell). It serves the built `dist/` through Vite preview and checks the actual hashed logo and all declared favicon/touch-icon PNG URLs, including correct aspect ratios at 320–1920px. Generated screenshots remain in ignored `test-results/`.
 
 `index.html` includes baseline title, description, Open Graph type/title/description/locale, theme colour and language. `usePageTitle` updates page titles/descriptions and OG title/description on navigation. Product/service URLs use slugs. Real canonical URLs, share images, robots directives, sitemap, structured product data and prerendering should be configured once the domain/catalogue exist.
 
@@ -322,9 +394,11 @@ This is a client-rendered SPA; client-updated metadata has crawler limitations a
 
 PGlite uses real PostgreSQL SQL/RLS execution but **does not emulate the full Supabase platform**. Hosted Auth cookies/sessions, PostgREST grants, real Storage signed URLs/uploads and platform advisors still need checks on a designated development project. A local migration pass does not mean Supabase is connected.
 
-The browser suite passed on this bootstrap: all public routes at 375px, 768px and 1440px; direct protected-admin navigation; mobile navigation; persisted quantity changes/removal; corrupt storage recovery; and zero console/runtime errors. Mobile/desktop homepage screenshots were captured and visually reviewed in addition to automated overflow assertions. `npm run build` also passed after bundling the fonts locally.
+The browser suite checks all public routes at 375px, 768px, 1024px, 1440px and 1920px; direct protected-admin navigation; mobile navigation and Escape/focus handling; persisted quantity changes/removal; corrupt storage recovery; hero loading priority; all loaded homepage images; the signature font; five/six preview cards; product/service enquiry destinations and WhatsApp message contents; native mobile gallery scrolling; reduced-motion styles; and console/runtime errors. Mobile/desktop full-page, hero and collection screenshots were captured and visually reviewed. The homepage redesign passed these checks with zero console/runtime errors. The production build and all 13 utility/database checks also passed after the final changes.
 
 ## Development progress
+
+The Shop category row uses square image areas (`aspect-ratio: 1`) for taller product photography, with `object-fit: cover`, unchanged category labels and horizontal mobile scrolling. At the same card width, this is 35% taller than the previous 1.35 landscape crop. The shared public header follows the Shop appearance on all routes and contains no bag/counter.
 
 - [x] Vite + React JavaScript project and pinned dependencies/lockfile
 - [x] Organised components, pages, hooks, context and service layer
@@ -344,6 +418,12 @@ The browser suite passed on this bootstrap: all public routes at 375px, 768px an
 - [ ] Connected/verified live Supabase development project
 - [ ] Live Auth and Storage end-to-end verification and platform advisors
 - [x] Browser verification: responsive routes, admin redirects, persistent cart, no console errors; screenshots reviewed
+- [x] Photographic homepage redesign with separate hero, benefits, journeys, showcases, story, social and contact components
+- [x] Supplied hero preserved, responsive WebP derivatives, handwritten reference-style signature and local font
+- [x] Live-first homepage service integration with labelled non-purchasable editorial previews
+- [x] Supplied WhatsApp number, address and Instagram integrated through shared public settings
+- [x] Official supplied logo integrated in public/admin branding; supplied square icon used for browser favicons and Apple touch icon, with production asset verification
+- [x] Mobile swipe galleries, keyboard menu handling, reduced motion and image/link browser checks
 - [ ] Product/category/service editing and image-upload UI
 - [ ] Authoritative checkout, delivery totals and atomic order creation
 - [ ] Secure order access and EFT instructions
@@ -351,13 +431,14 @@ The browser suite passed on this bootstrap: all public routes at 375px, 768px an
 - [ ] Checkout WhatsApp handoff
 - [ ] Full admin order management and audited status transitions
 - [ ] Public business and private banking settings editors
-- [ ] Final reference-inspired photography and landing-page polish
+- [ ] Replace generated editorial previews with actual AVHA catalogue/client photography and verify live homepage data
+- [ ] Supply the official Facebook page URL
 - [ ] Production deployment and operational review
 
 ## Decisions / architecture notes
 
 - Build the requested first stage; keep unfinished workflows explicit and non-operational rather than presenting fake success.
-- Store all business records in Supabase, with no permanent hard-coded product catalogue or invented banking details.
+- Store all sellable business records in Supabase. Keep homepage-only editorial previews isolated, labelled and routed to enquiries, with no cart/checkout access or invented banking details.
 - Use database-owned admin membership so privilege revocation does not wait for a JWT claim refresh.
 - Split public contacts from sensitive banking details rather than relying on UI field hiding.
 - Deny browser order writes until a trusted endpoint exists; RLS cannot make browser-supplied prices authoritative by itself.
@@ -370,6 +451,7 @@ The browser suite passed on this bootstrap: all public routes at 375px, 768px an
 ## Known issues / unfinished work
 
 - No live Supabase project/key was supplied or selected. Authentication/data code and migration exist but are not connected to a hosted business database.
+- The homepage uses documented illustrative preview imagery and indicative prices until actual catalogue content is supplied. It is not evidence of inventory, exact custom pricing or AVHA client work. The Instagram gallery is curated, not an API feed. An official Facebook page is still needed.
 - Checkout, EFT instructions, scoped order access and customer proof upload are deliberately unavailable. The app is not yet ready to accept real orders.
 - Admin editors, archive/featured controls, settings changes, proof review and status-management UI are placeholders. Dashboard counts are capped list lengths, not aggregate business reporting.
 - Catalogue pagination/filtering, image-specific alt descriptions, stock reservation, multi-tab cart syncing and made-to-order lead times need feature work.
@@ -380,7 +462,7 @@ The browser suite passed on this bootstrap: all public routes at 375px, 768px an
 
 ## Future improvements
 
-Automated card payments; optional customer accounts; secure order tracking; courier/delivery integration; stock counting/reservations; email/SMS notifications; business analytics; admin MFA and recovery; audit history; automated backups/restore drills; CI build/security checks; image optimisation and a polished reference-led homepage.
+Automated card payments; optional customer accounts; secure order tracking; courier/delivery integration; stock counting/reservations; email/SMS notifications; business analytics; admin MFA and recovery; audit history; automated backups/restore drills; CI build/security checks; managed social links; actual AVHA catalogue photography and a connected content workflow.
 
 ## Documentation rule
 

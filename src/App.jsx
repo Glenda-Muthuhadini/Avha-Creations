@@ -3,7 +3,8 @@ import PublicLayout from './components/layout/PublicLayout';
 import ProtectedAdminRoute from './components/admin/ProtectedAdminRoute';
 import AdminLayout from './components/admin/AdminLayout';
 import HomePage from './pages/public/HomePage';
-import CataloguePage from './pages/public/CataloguePage';
+import HairServicesPage from './pages/public/HairServicesPage';
+import ShopPage from './pages/public/ShopPage';
 import DetailPage from './pages/public/DetailPage';
 import AboutPage from './pages/public/AboutPage';
 import ContactPage from './pages/public/ContactPage';
@@ -22,9 +23,9 @@ export default function App() {
   return <Routes>
     <Route element={<PublicLayout />}>
       <Route index element={<HomePage />} />
-      <Route path="shop" element={<CataloguePage kind="products" />} />
+      <Route path="shop" element={<ShopPage />} />
       <Route path="shop/:slug" element={<DetailPage kind="products" />} />
-      <Route path="hair-services" element={<CataloguePage kind="services" />} />
+      <Route path="hair-services" element={<HairServicesPage />} />
       <Route path="hair-services/:slug" element={<DetailPage kind="services" />} />
       <Route path="about" element={<AboutPage />} />
       <Route path="contact" element={<ContactPage />} />

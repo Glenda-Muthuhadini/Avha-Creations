@@ -1,0 +1,49 @@
+{
+  "method": "Built-in image_gen tool; illustrative supporting assets only. Hero supplied by user and never regenerated.",
+  "assets": [
+    {
+      "file": "public/images/crochet-bag.webp",
+      "prompt": "Use case: product-mockup. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: One beautiful dusty pink hand crocheted structured handbag with gold chain strap and small gold clasp, resting on warm stone, full bag visible, shallow depth of field, luxury handmade boutique still life. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as crochet-bag."
+    },
+    {
+      "file": "public/images/beaded-earrings.webp",
+      "prompt": "Use case: product-mockup. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: A pair of ornate red and gold African beadwork teardrop earrings hanging from a slender black jewellery T-bar, full pair in frame, tactile bead details, warm boutique still life. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as beaded-earrings."
+    },
+    {
+      "file": "public/images/fascinator.webp",
+      "prompt": "Use case: product-mockup. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: One champagne cream sinamay fascinator with airy sculptural loops and a delicate fabric flower, resting on warm stone, all edges visible, luxury millinery product still life. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as fascinator."
+    },
+    {
+      "file": "public/images/crochet-bow.webp",
+      "prompt": "Use case: product-mockup. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: One handmade cream and black crocheted hair bow, full bow visible with ribbon tails, resting on warm brown stone, beautiful crochet texture, luxury accessory still life. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as crochet-bow."
+    },
+    {
+      "file": "public/images/cornrows.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: Close side profile of a beautiful adult Black South African woman with intricate precise curved cornrow braids gathered in a low braided ponytail, gold hoop earring, no hat, warm salon background. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as cornrows."
+    },
+    {
+      "file": "public/images/braids.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: Back three-quarter portrait of an adult Black South African woman with long neat black box braids decorated with a few small gold cuffs, warm softly blurred luxurious salon background, hair is the focus. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as braids."
+    },
+    {
+      "file": "public/images/wig-installation.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: Back three-quarter portrait of an adult Black South African woman with glossy long soft black body-wave hair, impeccable natural-looking installed wig, warm softly blurred luxurious salon background, hair is the focus. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as wig-installation."
+    },
+    {
+      "file": "public/images/hair-colour.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: Back portrait of an adult Black South African woman with rich copper auburn glossy long waves, expert hair colouring, warm softly blurred luxurious salon background, hair is the focus. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as hair-colour."
+    },
+    {
+      "file": "public/images/hair-washing.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: Close editorial photo of gentle professional hair washing: adult Black woman reclining at a black ceramic salon basin, stylist hands lathering her natural black hair with white shampoo foam, warm ambient salon light. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as hair-washing."
+    },
+    {
+      "file": "public/images/custom-styling.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: Close side portrait of an adult Black South African woman with a glossy elegant black low sculptural bridal updo, minimal gold earrings, warm softly blurred luxurious salon background, hairstyle is the focus. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as custom-styling."
+    },
+    {
+      "file": "public/images/story-portrait.webp",
+      "prompt": "Use case: photorealistic-natural. Asset type: supporting photographic card for a South African handmade fashion and hair-artistry website, not a hero banner. Subject: Editorial shoulder-up portrait of an adult Black South African woman wearing a magnificent handmade natural straw wide brim hat with black crocheted edging and a black flower, looking down thoughtfully, warm golden garden bokeh, full hat visible. Style: photorealistic premium fashion editorial photography, tactile craftsmanship, warm espresso and caramel shadows, champagne highlights, natural skin texture. Composition: portrait 4:5, one cohesive photograph, centered subject with comfortable crop room; no collage. Lighting: warm soft window light and golden bokeh, sophisticated and realistic. No text, letters, branding, watermarks, or labels. Save the generated asset as story-portrait."
+    }
+  ]
+}

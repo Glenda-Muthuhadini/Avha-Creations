@@ -1,0 +1,8 @@
+import Button from '../common/Button';
+import Icon from '../common/Icon';
+import { useBusiness } from '../../context/BusinessContext';
+
+export default function ContactCTA() {
+  const { settings, whatsappUrl, error, retry } = useBusiness();
+  return <section className="campaign-contact" aria-labelledby="contact-title"><div className="container"><header><p className="eyebrow">Something personal starts here</p><h2 id="contact-title">Let’s create your next look.</h2><p>Have an occasion in mind, a custom idea, or a hair transformation?</p></header><div className="conversion-grid"><article><Icon name="pin" size={41} /><div><h3>Visit Us</h3><address>{settings.physical_address}</address><a className="location-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.physical_address)}`} target="_blank" rel="noreferrer">Find your way <span aria-hidden="true">↗</span></a></div></article><article><Icon name="whatsapp" size={42} /><div><h3>Book on WhatsApp</h3><p>Hair services & custom orders</p>{whatsappUrl ? <a className="button" href={whatsappUrl} target="_blank" rel="noreferrer">Chat Now <Icon name="arrow" size={17} /></a> : <Button to="/contact">Contact AVHA</Button>}</div></article><article><Icon name="calendar" size={39} /><div><h3>Make an Appointment</h3><p>Let’s create your look.</p><Button to="/contact">Book Now <Icon name="arrow" size={17} /></Button></div></article></div>{error && <p className="settings-notice" role="status">Showing AVHA’s published contact details. Current store settings couldn’t load. <button type="button" className="text-button" onClick={retry}>Try again</button></p>}</div></section>;
+}
