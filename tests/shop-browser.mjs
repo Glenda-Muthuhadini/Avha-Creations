@@ -17,7 +17,11 @@ let browser;
 const categories = ['hats-fascinators', 'bags', 'jewellery', 'crochet', 'accessories', 'occasion-pieces'].map((slug, index) => ({ id: `00000000-0000-4000-8000-${String(index).padStart(12, '0')}`, slug, name: ['Hats & Fascinators', 'Bags', 'Jewellery', 'Crochet', 'Accessories', 'Occasion Pieces'][index] }));
 const products = Array.from({ length: 27 }, (_, index) => ({
   id: `10000000-0000-4000-8000-${String(index).padStart(12, '0')}`,
-  slug: `creation-${index}`, name: `Creation ${String(index).padStart(2, '0')}`, price: String((index + 1) * 30),
+  slug: `creation-${index}`,
+  name: index >= 20 && index <= 23
+    ? ['Fuchsia Crochet Fringe Dress', 'Pastel Rainbow Crochet Dress', 'Vibrant Orange Crochet Dress', 'White Crochet Dress'][index - 20]
+    : `Creation ${String(index).padStart(2, '0')}`,
+  price: String((index + 1) * 30),
   active: index !== 26, category_id: categories[index % 6].id, featured: index < 5,
   stock_status: index === 1 ? 'out_of_stock' : index === 2 ? 'made_to_order' : 'in_stock',
   images: index === 3 ? [] : ['/images/products/optimized/crimson-crochet-bag-800.webp'],
@@ -55,6 +59,10 @@ try {
       if (['category_id', 'stock_status'].includes(key) && value.startsWith('in.')) {
         const allowed = value.slice(4, -1).split(',');
         rows = rows.filter(item => allowed.includes(item[key]));
+      }
+      if (key === 'or' && value.includes('name.ilike.%dress%')) {
+        const categoryIds = value.match(/category_id\.in\.\(([^)]+)\)/)?.[1].split(',') || [];
+        rows = rows.filter(item => item.name.toLowerCase().includes('dress') || categoryIds.includes(item.category_id));
       }
       if (key === 'slug') rows = rows.filter(item => item.slug === value.slice(3));
     }
@@ -97,20 +105,32 @@ try {
   await page.getByRole('status', { name: 'Discovering creations' }).waitFor();
   releaseProducts(); productGate = null;
   await resultCount(12);
+  const categoryNav = page.getByRole('navigation', { name: 'Shop by category' });
+  await categoryNav.getByRole('button', { name: 'Dresses', exact: true }).waitFor();
+  assert.equal(await categoryNav.getByRole('button', { name: 'Accessories', exact: true }).count(), 0);
+  await categoryNav.getByRole('button', { name: 'Dresses', exact: true }).click();
+  await resultCount(4);
+  assert.equal(new URL(page.url()).searchParams.get('category'), 'dresses');
+  assert.ok(requests.at(-1).searchParams.get('or').includes('name.ilike.%dress%'));
+  assert.ok((await cards.allTextContents()).every(name => name.toLowerCase().includes('dress')));
+  await page.goto(origin + '/shop');
+  await resultCount(12);
   const categoryImage = await page.locator('.category-card img').first().evaluate(image => {
     const { width, height } = image.getBoundingClientRect();
     return { width, height };
   });
   assert.ok(categoryImage.height > categoryImage.width / 1.5, 'Shop category images should use the taller crop');
-  const categoryNav = page.locator('.shop-categories');
-  assert.equal(await categoryNav.evaluate(element => getComputedStyle(element).position), 'sticky');
-  assert.equal(await categoryNav.evaluate(element => getComputedStyle(element).marginTop), '14px');
-  await page.evaluate(() => window.scrollTo(0, document.querySelector('.shop-categories').offsetTop + 100));
-  assert.ok(Math.abs(await categoryNav.evaluate(element => element.getBoundingClientRect().top)) <= 1, 'Category row should stick to the top while scrolling');
-  await page.evaluate(() => window.scrollTo(0, 0));
+  assert.equal(await categoryNav.evaluate(element => getComputedStyle(element).position), 'relative');
   assert.ok(requests[0].searchParams.get('select').includes('category_id'));
   assert.equal(requests[0].searchParams.get('active'), 'eq.true');
   assert.equal(requests[0].searchParams.get('limit'), '12');
+  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
+  await resultCount(24);
+  assert.ok(requests.some(request => request.searchParams.get('offset') === '12'));
+  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
+  await resultCount(26);
+  assert.equal(requests.at(-1).searchParams.get('offset'), '24');
+  assert.equal(await page.locator('.shop-load-more').count(), 0);
   await page.getByRole('button', { name: 'Add Creation 00 to wishlist' }).click();
   await page.reload(); await resultCount(12);
   assert.equal(await page.getByRole('button', { name: 'Remove Creation 00 from wishlist' }).getAttribute('aria-pressed'), 'true');
@@ -123,20 +143,19 @@ try {
   assert.ok((await page.locator('.cart-items').textContent()).includes('Creation 00'));
   await page.goto(origin + '/shop'); await resultCount(12);
   assert.equal(await cards.nth(1).getByRole('button', { name: 'Out of Stock' }).isDisabled(), true);
-  const madeToOrder = new URL(await cards.nth(2).getByRole('link', { name: 'Enquire' }).getAttribute('href'));
+  const madeToOrderLink = cards.nth(2).getByRole('link', { name: 'Order Now' });
+  const madeToOrder = new URL(await madeToOrderLink.getAttribute('href'));
+  assert.equal(await madeToOrderLink.locator('svg').count(), 0);
   assert.equal(madeToOrder.pathname, '/27762123234');
   assert.ok(madeToOrder.searchParams.get('text').includes('Creation 02'));
   assert.equal(await cards.nth(3).locator('.product-image-fallback').count(), 1);
   await cards.first().locator('img').evaluate(image => image.dispatchEvent(new Event('error')));
   assert.equal(await cards.first().locator('.product-image-fallback').count(), 1);
-  await page.getByRole('button', { name: 'Next page' }).click();
-  await page.waitForURL('**/shop?page=2');
-  await page.getByRole('button', { name: 'Page 2', exact: true }).waitFor();
-  await page.waitForFunction(() => document.querySelector('.shop-pagination [aria-current="page"]')?.textContent === '2');
-  await resultCount(12);
-  await page.getByRole('button', { name: 'Next page' }).click();
-  await resultCount(2);
-  assert.equal(await page.getByRole('button', { name: 'Next page' }).isDisabled(), true);
+  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
+  await resultCount(24);
+  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
+  await resultCount(26);
+  assert.equal(await page.locator('.shop-load-more').count(), 0);
   assert.equal(requests.at(-1).searchParams.get('offset'), '24');
   await page.goto(origin + '/shop'); await resultCount(12);
   await selectSidebarFilter('Bags'); await resultCount(5);

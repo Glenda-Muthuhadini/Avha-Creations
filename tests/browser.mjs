@@ -102,8 +102,17 @@ try {
   await page.goto(origin + '/shop');
   await page.locator('.catalogue-card').first().waitFor();
   assert.equal(await page.locator('.shop-signature').count(), 0);
-  assert.equal(await page.locator('.catalogue-card').count(), 9);
+  assert.equal(await page.locator('.catalogue-card').count(), 12);
+  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
+  await page.getByRole('heading', { name: 'White Crochet Fringe Dress', exact: true }).waitFor();
+  assert.equal(await page.locator('.catalogue-card').count(), 19);
+  assert.ok((await page.locator('.shop-preview-note').textContent()).includes('Estimated starting prices'));
   for (const [name, price] of [['Turquoise Crochet Bikini', 'From R200'], ['Crocheted Sunflower Scrunchie Pair', 'From R80']]) {
+    const product = page.locator('.catalogue-card').filter({ has: page.getByRole('heading', { name, exact: true }) });
+    assert.equal(await product.count(), 1);
+    assert.ok((await product.textContent()).includes(price));
+  }
+  for (const [name, price] of [['Chunky Pink Crochet Tassel Tote', 'From R550'], ['Coral Crochet Boho Two-Piece Set', 'From R480'], ['Crochet Chevron Two-Piece Set', 'From R500'], ['Crocheted Red and Cream Rose Bouquet', 'From R350'], ['Fuchsia Crochet Fringe Dress', 'From R750'], ['Hot Pink Crochet Ruffle Set', 'From R500'], ['Pastel Pink and Grey Fringe Skirt', 'From R450'], ['Pastel Rainbow Crochet Dress', 'From R700'], ['Vibrant Orange Crochet Fringe Dress', 'From R750'], ['White Crochet Fringe Dress', 'From R800']]) {
     const product = page.locator('.catalogue-card').filter({ has: page.getByRole('heading', { name, exact: true }) });
     assert.equal(await product.count(), 1);
     assert.ok((await product.textContent()).includes(price));
@@ -114,7 +123,7 @@ try {
   }
   const prices = await page.locator('.catalogue-card .price').allTextContents();
   assert.equal(prices.filter(price => /^From R250/.test(price)).length, 1);
-  assert.equal(prices.filter(price => /^From R450/.test(price)).length, 4);
+  assert.equal(prices.filter(price => /^From R450/.test(price)).length, 5);
   assert.equal(prices.filter(price => /^From R30(?:\D|$)/.test(price)).length, 2);
 
   await page.goto(origin + '/cart');

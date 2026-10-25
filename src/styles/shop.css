@@ -75,13 +75,10 @@
 .product-image-fallback > span { font-family: var(--serif); font-size: 1rem; letter-spacing: .1em; }
 .product-image-fallback > small { font-size: .62rem; color: #d3bca1; }
 .shop-preview-note { color: #d0b79b; font-size: .72rem; line-height: 1.65; margin: 22px 0 0; }
-.shop-pagination { display: flex; justify-content: center; align-items: center; gap: 10px; padding-top: 32px; }
-.shop-pagination > span { display: flex; align-items: center; gap: 10px; }
-.shop-pagination button { display: grid; place-items: center; min-width: 38px; height: 38px; border: 1px solid transparent; color: #ead3b5; background: transparent; border-radius: 50%; font-size: .8rem; }
-.shop-pagination > button { border-color: #be8f5d88; }
-.shop-pagination button[aria-current='page'], .shop-pagination button:hover:not(:disabled) { background: #e3b779; color: #25160c; }
-.shop-pagination button:disabled { opacity: .35; }
-.pagination-ellipsis { font-size: .8rem; color: #ceb99f; }
+.shop-load-more { position: relative; display: grid; justify-items: center; gap: 12px; padding: 28px 0 10px; }
+.shop-load-more__sentinel { position: absolute; inset: 0 auto auto; width: 1px; height: 1px; }
+.shop-load-more > p { margin: 0; color: #e2bda0; font-size: .78rem; text-align: center; }
+.shop-load-more .button { min-height: 42px; padding: 10px 20px; font-size: .7rem; }
 .shop-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 420px; padding: 50px 22px; text-align: center; border: 1px solid #c08c5254; border-radius: 12px; background: #291a107a; }
 .shop-state > svg { color: #d5ab77; margin-bottom: 22px; }
 .shop-state h3 { font-size: 2.3rem; margin-bottom: 14px; }
@@ -171,9 +168,6 @@
   .site-header .menu-toggle { font-size: .7rem; padding-inline: 12px; }
   .shop-state { min-height: 340px; }
   .shop-state h3 { font-size: 2rem; }
-  .shop-pagination { gap: 4px; }
-  .shop-pagination > span { gap: 4px; }
-  .shop-pagination button { min-width: 34px; height: 34px; }
 }
 @media (max-width: 359px) {
   .shop-product-grid { grid-template-columns: 1fr; }

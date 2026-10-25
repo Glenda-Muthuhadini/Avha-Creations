@@ -454,7 +454,7 @@ The Shop category row uses square image areas (`aspect-ratio: 1`) for taller pro
 - The homepage uses documented illustrative preview imagery and indicative prices until actual catalogue content is supplied. It is not evidence of inventory, exact custom pricing or AVHA client work. The Instagram gallery is curated, not an API feed. An official Facebook page is still needed.
 - Checkout, EFT instructions, scoped order access and customer proof upload are deliberately unavailable. The app is not yet ready to accept real orders.
 - Admin editors, archive/featured controls, settings changes, proof review and status-management UI are placeholders. Dashboard counts are capped list lengths, not aggregate business reporting.
-- Catalogue pagination/filtering, image-specific alt descriptions, stock reservation, multi-tab cart syncing and made-to-order lead times need feature work.
+- The shop loads products in 12-item batches as visitors scroll. Its local preview catalogue and estimated prices do not seed Supabase; verify final prices and create active database records with public image URLs before connecting a live catalogue. Image-specific alt descriptions, stock reservation, multi-tab cart syncing and made-to-order lead times still need work.
 - Public catalogue images are public independently of product active state; never upload private material to that bucket.
 - Detailed transitions/audit logging, anti-abuse limits, file-content validation, recovery workflows, privacy/retention decisions and transactional cross-table subtotal validation are next-stage work.
 - Full local Supabase services/platform advisors were not run because Docker/a selected live project were unavailable. PGlite verification covers SQL/RLS with stand-ins only.

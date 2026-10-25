@@ -34,7 +34,7 @@ export function ProductActions({ product }) {
   const out = product.stock_status === 'out_of_stock';
   const enquiry = product.preview || product.stock_status !== 'in_stock';
   const whatsapp = enquiryUrl(settings.whatsapp_number, `Hi AVHA, I'd like to enquire about ${product.name}.`);
-  if (!out && enquiry) return <div className="product-actions"><span className="product-stock">Made to order</span>{whatsapp ? <a className="button product-add" href={whatsapp} target="_blank" rel="noreferrer"><Icon name="whatsapp" size={15} />Enquire</a> : <Link className="button product-add" to={`/contact?creation=${encodeURIComponent(product.name)}`}>Enquire</Link>}</div>;
+  if (!out && enquiry) return <div className="product-actions"><span className="product-stock">Made to order</span>{whatsapp ? <a className="button product-add" href={whatsapp} target="_blank" rel="noreferrer">Order Now</a> : <Link className="button product-add" to={`/contact?creation=${encodeURIComponent(product.name)}`}>Order Now</Link>}</div>;
   return <div className="product-actions"><span className={`product-stock ${out ? 'product-stock--out' : ''}`}>{out ? 'Out of stock' : 'In stock'}</span><button type="button" className="button product-add" disabled={out} onClick={() => {
     try {
       add(product, 1);

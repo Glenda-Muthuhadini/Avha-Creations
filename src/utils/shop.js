@@ -52,8 +52,15 @@ export function buildShopQuery(client, filters, categories) {
   if (filters.max < PRICE_LIMIT) query = query.lte('price', filters.max);
   if (filters.categories.length) {
     const ids = categories.filter(category => filters.categories.includes(category.slug)).map(category => category.id);
-    if (!ids.length) return null;
-    query = query.in('category_id', ids);
+    if (filters.categories.includes('dresses')) {
+      const categoryFilters = [];
+      if (ids.length) categoryFilters.push(`category_id.in.(${ids.join(',')})`);
+      categoryFilters.push('name.ilike.%dress%');
+      query = query.or(categoryFilters.join(','));
+    } else {
+      if (!ids.length) return null;
+      query = query.in('category_id', ids);
+    }
   }
   if (filters.availability.length) query = query.in('stock_status', filters.availability);
   if (filters.sort === 'featured') query = query.order('featured', { ascending: false }).order('name');

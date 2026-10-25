@@ -11,7 +11,6 @@ import ShopHero from '../../components/shop/ShopHero';
 import CategoryScroller from '../../components/shop/CategoryScroller';
 import { FilterControls, MobileFilterDrawer } from '../../components/shop/ShopFilters';
 import ProductGrid from '../../components/shop/ProductGrid';
-import ShopPagination from '../../components/shop/ShopPagination';
 import ShopBenefits from '../../components/shop/ShopBenefits';
 import { ShopEmptyState, ShopErrorState, ShopLoadingState } from '../../components/shop/ShopStates';
 import Icon from '../../components/common/Icon';
@@ -24,9 +23,19 @@ export default function ShopPage() {
   const categories = useMemo(() => categoryPresentation(categoryResource.data || []), [categoryResource.data]);
   const load = useCallback(() => getShopProducts(filters, categoryResource.data), [filters, categoryResource.data]);
   const products = useResource(load, Boolean(categoryResource.data));
+  const [additionalProducts, setAdditionalProducts] = useState([]);
+  const [nextPage, setNextPage] = useState(filters.page + 1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [moreError, setMoreError] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [draft, setDraft] = useState(filters);
   const collection = useRef(null);
+  const loadMoreSentinel = useRef(null);
+  const loadMoreLocked = useRef(false);
+  const requestId = useRef(0);
+  const currentFilterKey = useMemo(() => JSON.stringify(filters), [filters]);
+  const activeFilterKey = useRef(currentFilterKey);
+  activeFilterKey.current = currentFilterKey;
   const { storageError: cartError } = useCart();
   const { storageError: wishlistError } = useWishlist();
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
@@ -34,8 +43,52 @@ export default function ShopPage() {
   const clear = () => update({ ...readShopFilters(new URLSearchParams()), sort: filters.sort });
   const scrollToCollection = () => collection.current?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
   const pages = Math.max(1, Math.ceil((products.data?.total || 0) / PAGE_SIZE));
+  const visibleProducts = [...(products.data?.items || []), ...additionalProducts];
+  const loadedCount = Math.max(0, (filters.page - 1) * PAGE_SIZE) + visibleProducts.length;
+  const hasMore = Boolean(products.data && loadedCount < products.data.total);
   const loading = categoryResource.loading || products.loading || (!products.data && !products.error && !categoryResource.error);
   const error = categoryResource.error || products.error;
+  const loadMore = useCallback(async () => {
+    if (!products.data || !hasMore || loadMoreLocked.current) return;
+    loadMoreLocked.current = true;
+    const requestedFilterKey = currentFilterKey;
+    const requestedPage = nextPage;
+    const currentRequestId = ++requestId.current;
+    setLoadingMore(true);
+    setMoreError(null);
+    try {
+      const result = await getShopProducts({ ...filters, page: requestedPage }, categoryResource.data);
+      if (requestId.current !== currentRequestId || activeFilterKey.current !== requestedFilterKey) return;
+      setAdditionalProducts(previous => [...previous, ...result.items]);
+      setNextPage(requestedPage + 1);
+    } catch (loadError) {
+      if (requestId.current === currentRequestId && activeFilterKey.current === requestedFilterKey) {
+        setMoreError(loadError);
+        if (import.meta.env.DEV) console.warn('Additional shop products request failed', loadError);
+      }
+    } finally {
+      if (requestId.current === currentRequestId) {
+        loadMoreLocked.current = false;
+        setLoadingMore(false);
+      }
+    }
+  }, [products.data, hasMore, currentFilterKey, nextPage, filters, categoryResource.data]);
+  useEffect(() => {
+    requestId.current += 1;
+    loadMoreLocked.current = false;
+    setAdditionalProducts([]);
+    setNextPage(filters.page + 1);
+    setMoreError(null);
+    setLoadingMore(false);
+  }, [currentFilterKey, filters.page]);
+  useEffect(() => {
+    if (!hasMore || loading || error || moreError || !loadMoreSentinel.current) return undefined;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) loadMore();
+    }, { rootMargin: '500px 0px' });
+    observer.observe(loadMoreSentinel.current);
+    return () => observer.disconnect();
+  }, [hasMore, loading, error, moreError, loadMore]);
   useEffect(() => {
     if (products.data && !products.loading && filters.page > pages) update({ ...filters, page: pages });
   }, [products.data, products.loading, filters, pages, update]);
@@ -50,12 +103,12 @@ export default function ShopPage() {
           <label className="shop-sort">Sort by<select value={filters.sort} onChange={event => update({ ...filters, sort: event.target.value, page: 1 })}>{SORT_OPTIONS.map(([value, name]) => <option key={value} value={value}>{name}</option>)}</select></label>
         </div>
       </header>
-      <div className="shop-result-meta"><p aria-live="polite">{loading ? 'Discovering your next favourite…' : error ? 'Collection temporarily unavailable' : `${products.data?.total || 0} ${(products.data?.total || 0) === 1 ? 'creation' : 'creations'}${filters.page > 1 ? ` · Page ${filters.page} of ${pages}` : ''}`}</p>{hasShopFilters(filters) && <button type="button" className="filter-clear" onClick={clear}>Clear filters</button>}</div>
+      <div className="shop-result-meta"><p aria-live="polite">{loading ? 'Discovering your next favourite…' : error ? 'Collection temporarily unavailable' : `${Math.min(loadedCount, products.data?.total || 0)} of ${products.data?.total || 0} ${(products.data?.total || 0) === 1 ? 'creation' : 'creations'}`}</p>{hasShopFilters(filters) && <button type="button" className="filter-clear" onClick={clear}>Clear filters</button>}</div>
       {(cartError || wishlistError) && <p className="shop-notice" role="status">{cartError || wishlistError}</p>}
       {error ? <ShopErrorState retry={retry} /> : loading ? <ShopLoadingState /> : !products.data?.items.length ? <ShopEmptyState filtered={hasShopFilters(filters)} onClear={clear} /> : <>
-        <ProductGrid products={products.data.items} variant="shop" />
-        {products.data.preview && <p className="shop-preview-note">Handmade to order. Starting prices shown; contact AVHA to confirm your colours, details and availability.</p>}
-        <ShopPagination page={filters.page} pages={pages} onChange={page => { update({ ...filters, page }); scrollToCollection(); }} />
+        <ProductGrid products={visibleProducts} variant="shop" />
+        {products.data.preview && <p className="shop-preview-note">Handmade to order. Estimated starting prices shown; contact AVHA to confirm your colours, details and final pricing.</p>}
+        {hasMore && <div className="shop-load-more"><div ref={loadMoreSentinel} className="shop-load-more__sentinel" aria-hidden="true" />{moreError && <p role="alert">We couldn’t load more creations. {moreError.message}</p>}<button type="button" className="button button--outline" onClick={loadMore} disabled={loadingMore}>{loadingMore ? 'Loading more…' : moreError ? 'Try again' : 'Load more creations'}</button></div>}
       </>}
       </div>
     </section>
