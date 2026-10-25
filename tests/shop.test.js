@@ -30,20 +30,30 @@ test('local supplied collection filters category unions, prices and availability
   assert.equal(run('category=bags').total, 5);
   assert.equal(run('category=bags&category=jewellery').total, 7);
   const dresses = run('category=dresses');
-  assert.equal(dresses.total, 4);
+  assert.equal(dresses.total, 5);
   assert.deepEqual(dresses.items.map(item => item.slug), [
     'fuchsia-crochet-fringe-dress',
     'pastel-rainbow-crochet-dress',
     'vibrant-orange-crochet-fringe-dress',
     'white-crochet-fringe-dress',
+    'red-ribbed-crochet-dress',
   ]);
   assert.equal(run('max=40').total, 2);
   assert.equal(run('availability=in_stock').total, 0);
-  assert.equal(run('availability=made_to_order').total, 19);
+  assert.equal(run('availability=made_to_order').total, 25);
   assert.equal(run('category=unknown').total, 0);
-  assert.equal(run('min=500').total, 7);
+  assert.equal(run('min=500').total, 13);
   assert.deepEqual(run('sort=price-asc').items.map(item => item.price), [30, 30, 80, 200, 250, 350, 450, 450, 450, 450, 450, 480]);
   assert.ok(run('').items.every(item => item.preview && item.stock_status === 'made_to_order'));
+});
+
+test('the expanded local catalogue loads in three 12-product pages', () => {
+  const page = value => filterLocalProducts(collectionProducts, readShopFilters(new URLSearchParams(`page=${value}`)));
+  assert.equal(collectionProducts.length, 25);
+  assert.equal(page(1).items.length, PAGE_SIZE);
+  assert.equal(page(2).items.length, PAGE_SIZE);
+  assert.equal(page(3).items.length, 1);
+  assert.equal(page(3).total, 25);
 });
 
 test('Supabase queries use active-only reads, server filtering and deterministic 12-item pagination', () => {

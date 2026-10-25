@@ -34,4 +34,10 @@ export const collectionProducts = [
   product('pastel-rainbow-crochet-dress', 'Pastel Rainbow Crochet Dress', 'Pastel Rainbow Crochet Dress Display', 700, ['dresses', 'crochet', 'occasion-pieces']),
   product('vibrant-orange-crochet-fringe-dress', 'Vibrant Orange Crochet Fringe Dress', 'Vibrant Orange Crochet Fringe Dress', 750, ['dresses', 'crochet', 'occasion-pieces']),
   product('white-crochet-fringe-dress', 'White Crochet Fringe Dress', 'White Crochet Fringe Dress Mannequin', 800, ['dresses', 'crochet', 'occasion-pieces']),
+  product('green-crop-top-striped-skirt-set', 'Crochet Green Crop Top & Striped Skirt Set', 'Crochet Green Crop Top and Striped Skirt', 600, ['crochet', 'occasion-pieces']),
+  product('pink-purple-crochet-fringe-ensemble', 'Pink & Purple Crochet Fringe Ensemble', 'Crochet Pink and Purple Fringe Ensemble', 650, ['crochet', 'occasion-pieces']),
+  product('pastel-crochet-fairy-tutu', 'Pastel Crochet Fairy Tutu', 'Pastel Crochet Fairy Tutu Display', 500, ['crochet', 'occasion-pieces']),
+  product('pink-crochet-ruffled-romper', 'Pink Crochet Ruffled Romper', 'Pink Crochet Ruffled Romper mannequin', 550, ['crochet', 'occasion-pieces']),
+  product('pink-crochet-top-pastel-skirt-set', 'Pink Crochet Top & Pastel Skirt Set', 'Pink Crochet Top and Pastel Skirt Set', 600, ['crochet', 'occasion-pieces']),
+  product('red-ribbed-crochet-dress', 'Red Ribbed Crochet Dress', 'Red Ribbed Crochet Dress on Gold Stand', 750, ['dresses', 'crochet', 'occasion-pieces']),
 ];
