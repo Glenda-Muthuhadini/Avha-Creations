@@ -109,7 +109,7 @@ try {
   assert.equal(await page.locator('.catalogue-card').count(), 35);
   assert.equal(await page.locator('.shop-preview-note').count(), 0);
   assert.equal(await page.getByText('Estimated starting prices', { exact: false }).count(), 0);
-  for (const [name, price] of [['Turquoise Crochet Bikini', 'From R200'], ['Crocheted Sunflower Scrunchie Pair', 'From R80']]) {
+  for (const [name, price] of [['Turquoise Crochet Bikini', 'From R200'], ['Crocheted Sunflower Scrunchie Pair', 'From R25']]) {
     const product = page.locator('.catalogue-card').filter({ has: page.getByRole('heading', { name, exact: true }) });
     assert.equal(await product.count(), 1);
     assert.ok((await product.textContent()).includes(price));
@@ -117,20 +117,20 @@ try {
   for (const [name, price] of [
     ['Chunky Pink Crochet Tassel Tote', 'From R550'],
     ['Coral Crochet Boho Two-Piece Set', 'From R480'],
-    ['Crochet Chevron Two-Piece Set', 'From R500'],
-    ['Crocheted Red and Cream Rose Bouquet', 'From R350'],
-    ['Fuchsia Crochet Fringe Dress', 'From R750'],
+    ['Crochet Chevron Two-Piece Set', 'From R800'],
+    ['Crocheted Red and Cream Rose Bouquet', 'R30 each rose'],
+    ['Fuchsia Crochet Fringe Dress (Swim Cover)', 'From R650'],
     ['Hot Pink Crochet Ruffle Set', 'From R500'],
     ['Pastel Pink and Grey Fringe Skirt', 'From R450'],
-    ['Pastel Rainbow Crochet Dress', 'From R700'],
-    ['Vibrant Orange Crochet Fringe Dress', 'From R750'],
-    ['White Crochet Fringe Dress', 'From R800'],
+    ['Pastel Rainbow Crochet Dress', 'From R800'],
+    ['Vibrant Orange Waffle Stitch Crochet Fringe Dress', 'From R800'],
+    ['White Waffle Stitch Crochet Fringe Dress', 'From R800'],
     ['Crochet Green Crop Top & Striped Skirt Set', 'From R600'],
     ['Pink & Purple Crochet Fringe Ensemble', 'From R650'],
     ['Pastel Crochet Fairy Tutu', 'From R500'],
     ['Pink Crochet Ruffled Romper', 'From R550'],
     ['Pink Crochet Top & Pastel Skirt Set', 'From R600'],
-    ['Red Ribbed Crochet Dress', 'From R750'],
+    ['Red Ribbed Crochet Dress', 'From R800'],
   ]) {
     const product = page.locator('.catalogue-card').filter({ has: page.getByRole('heading', { name, exact: true }) });
     assert.equal(await product.count(), 1);
@@ -142,7 +142,7 @@ try {
   }
   const prices = await page.locator('.catalogue-card .price').allTextContents();
   assert.equal(prices.filter(price => /^From R250/.test(price)).length, 1);
-  assert.equal(prices.filter(price => /^From R450/.test(price)).length, 8);
+  assert.equal(prices.filter(price => /^From R450/.test(price)).length, 7);
   assert.equal(prices.filter(price => /^From R30(?:\D|$)/.test(price)).length, 2);
 
   const sunhat = page.locator('.catalogue-card').filter({ has: page.getByRole('heading', { name: 'Blue & Yellow Crochet Sunhat', exact: true }) });
@@ -213,7 +213,7 @@ try {
   await page.reload();
   await page.waitForFunction(() => document.querySelectorAll('.catalogue-card--shop').length === 7);
   await page.goto(origin + '/shop?category=bags&min=450&max=500&availability=made_to_order');
-  await page.waitForFunction(() => document.querySelectorAll('.catalogue-card--shop').length === 5);
+  await page.waitForFunction(() => document.querySelectorAll('.catalogue-card--shop').length === 4);
   await page.goto(origin + '/shop?category=bags&availability=in_stock');
   await page.getByRole('heading', { name: 'No creations found' }).waitFor();
   await page.getByRole('button', { name: 'Clear Filters', exact: true }).click();

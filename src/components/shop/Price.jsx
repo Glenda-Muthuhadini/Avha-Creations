@@ -1,2 +1,2 @@
 import { formatRand } from '../../utils/money';
-export default function Price({ value, from = false }) { return <span className="price">{from && 'From '}{formatRand(value)}</span>; }
+export default function Price({ value, from = false, unit }) { return <span className="price">{from && !unit && 'From '}{formatRand(value)}{unit && ` ${unit}`}</span>; }

@@ -27,7 +27,7 @@ function ItemDetails({ item, product }) {
   const [message, setMessage] = useState('');
   const { add } = useCart();
   const available = !item.preview && item.stock_status === 'in_stock';
-  return <div className="detail-grid"><div className="detail-gallery"><ProductGallery product={item} /></div><div className="detail-copy"><p className="eyebrow">{product ? 'Handmade with care' : 'Crafted around you'}</p><p className="description">{item.description}</p>{(product || item.price_from !== null) && <Price value={product ? item.price : item.price_from} from={!product || item.preview} />}
+  return <div className="detail-grid"><div className="detail-gallery"><ProductGallery product={item} /></div><div className="detail-copy"><p className="eyebrow">{product ? 'Handmade with care' : 'Crafted around you'}</p><p className="description">{item.description}</p>{(product || item.price_from !== null) && <Price value={product ? item.price : item.price_from} from={!product || item.preview} unit={product ? item.price_unit : undefined} />}
     {product && available ? <><QuantitySelector quantity={quantity} onChange={setQuantity} /><Button onClick={() => { add(item, quantity); setMessage('Added to your bag.'); }}>Add to bag</Button><p role="status">{message}</p>{message && <Link to="/cart">View your bag →</Link>}</> : product ? <ProductActions product={item} /> : <Button to="/contact">Enquire about this service ↗</Button>}
   </div></div>;
 }

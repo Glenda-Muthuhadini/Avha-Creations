@@ -51,7 +51,7 @@ test('local supplied collection filters category unions, prices and availability
     'red-ribbed-crochet-dress',
     'emerald-crochet-baby-dress-set',
   ]);
-  assert.equal(run('max=40').total, 3);
+  assert.equal(run('max=40').total, 5);
   assert.equal(run('availability=in_stock').total, 0);
   assert.equal(run('availability=made_to_order').total, 35);
   assert.equal(run('category=unknown').total, 0);
@@ -74,7 +74,7 @@ test('the expanded local catalogue loads 20 products first, then the remaining 1
 test('category, price and availability filters combine and newest uses catalogue order without dates', () => {
   const filters = readShopFilters(new URLSearchParams('category=bags&min=450&max=500&availability=made_to_order&sort=price-desc'));
   const result = filterLocalProducts(collectionProducts, filters);
-  assert.equal(result.total, 5);
+  assert.equal(result.total, 4);
   assert.ok(result.items.every(item => item.categories.includes('bags') && item.price >= 450 && item.price <= 500 && item.stock_status === 'made_to_order'));
   const newest = filterLocalProducts(collectionProducts, readShopFilters(new URLSearchParams('sort=newest')));
   assert.equal(newest.items[0].slug, 'rasta-crochet-hat-earring-set');

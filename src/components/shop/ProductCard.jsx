@@ -13,7 +13,7 @@ export default function ProductCard({ product, variant = 'default' }) {
   return <article className={`catalogue-card catalogue-card--${variant}`}>
     <ProductGallery key={product.id} product={product} to={to} />
     {shop && <WishlistButton product={product} />}
-    <div className="card-content"><Link to={to}><h3>{product.name}</h3></Link>{product.price == null ? <span className="price">Enquire for pricing</span> : <Price value={product.price} from={product.preview} />}
+    <div className="card-content"><Link to={to}><h3>{product.name}</h3></Link>{product.price == null ? <span className="price">Enquire for pricing</span> : <Price value={product.price} from={product.preview} unit={product.price_unit} />}
       {shop && <ProductActions product={product} />}
     </div>
   </article>;
