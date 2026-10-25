@@ -14,14 +14,17 @@ import ProductGrid from '../../components/shop/ProductGrid';
 import ShopBenefits from '../../components/shop/ShopBenefits';
 import { ShopEmptyState, ShopErrorState, ShopLoadingState } from '../../components/shop/ShopStates';
 import Icon from '../../components/common/Icon';
+import { EmptyState } from '../../components/common/States';
 
-export default function ShopPage() {
-  usePageTitle('Shop handmade creations', 'Discover AVHA crochet bags, ruffle hats and beaded jewellery. Beautifully handcrafted, made to be you.');
+export default function ShopPage({ favoritesOnly = false }) {
+  usePageTitle(favoritesOnly ? 'Favorites' : 'Shop handmade creations', 'Discover AVHA crochet bags, ruffle hats and beaded jewellery. Beautifully handcrafted, made to be you.');
+  const { ids, storageError: wishlistError } = useWishlist();
+  const favoriteIds = favoritesOnly ? ids : null;
   const [params, setParams] = useSearchParams();
   const filters = useMemo(() => readShopFilters(params), [params]);
   const categoryResource = useResource(getShopCategories);
   const categories = useMemo(() => categoryPresentation(categoryResource.data || []), [categoryResource.data]);
-  const load = useCallback(() => getShopProducts(filters, categoryResource.data), [filters, categoryResource.data]);
+  const load = useCallback(() => getShopProducts(filters, categoryResource.data, favoriteIds), [filters, categoryResource.data, favoriteIds]);
   const products = useResource(load, Boolean(categoryResource.data));
   const [additionalProducts, setAdditionalProducts] = useState([]);
   const [nextPage, setNextPage] = useState(filters.page + 1);
@@ -33,11 +36,10 @@ export default function ShopPage() {
   const loadMoreSentinel = useRef(null);
   const loadMoreLocked = useRef(false);
   const requestId = useRef(0);
-  const currentFilterKey = useMemo(() => JSON.stringify(filters), [filters]);
+  const currentFilterKey = useMemo(() => JSON.stringify({ filters, favoriteIds }), [filters, favoriteIds]);
   const activeFilterKey = useRef(currentFilterKey);
   activeFilterKey.current = currentFilterKey;
   const { storageError: cartError } = useCart();
-  const { storageError: wishlistError } = useWishlist();
   const closeDrawer = useCallback(() => setDrawerOpen(false), []);
   const update = useCallback(next => setParams(writeShopFilters(next), { replace: true }), [setParams]);
   const clear = () => update({ ...readShopFilters(new URLSearchParams()), sort: filters.sort });
@@ -57,7 +59,7 @@ export default function ShopPage() {
     setLoadingMore(true);
     setMoreError(null);
     try {
-      const result = await getShopProducts({ ...filters, page: requestedPage }, categoryResource.data);
+      const result = await getShopProducts({ ...filters, page: requestedPage }, categoryResource.data, favoriteIds);
       if (requestId.current !== currentRequestId || activeFilterKey.current !== requestedFilterKey) return;
       setAdditionalProducts(previous => [...previous, ...result.items]);
       setNextPage(requestedPage + 1);
@@ -72,7 +74,7 @@ export default function ShopPage() {
         setLoadingMore(false);
       }
     }
-  }, [products.data, loading, error, hasMore, currentFilterKey, nextPage, filters, categoryResource.data]);
+  }, [products.data, loading, error, hasMore, currentFilterKey, nextPage, filters, categoryResource.data, favoriteIds]);
   useEffect(() => {
     requestId.current += 1;
     loadMoreLocked.current = false;
@@ -94,18 +96,18 @@ export default function ShopPage() {
   }, [products.data, products.loading, filters, pages, update]);
   useEffect(() => { if (error && import.meta.env.DEV) console.warn('Shop catalogue request failed', error); }, [error]);
   const retry = () => { if (categoryResource.error) categoryResource.retry(); else products.retry(); };
-  return <div className="shop-page"><ShopHero />
+  return <div className="shop-page">{favoritesOnly ? <header className="container favorites-intro"><h1>Favorites</h1><p>The creations you love, saved in one place.</p></header> : <ShopHero />}
     <CategoryScroller categories={categories} selected={filters.categories} onSelect={slug => { update({ ...filters, categories: filters.categories.length === 1 && filters.categories[0] === slug ? [] : [slug], page: 1 }); scrollToCollection(); }} />
     <section ref={collection} id="all-creations" className="container shop-collection" aria-labelledby="collection-title">
       <aside className="shop-desktop-filters filter-panel" aria-label="Filter creations"><FilterControls filters={filters} categories={categories} onChange={update} onClear={clear} /></aside>
-      <div className="shop-results"><header className="shop-toolbar"><div><h2 id="collection-title">All Creations</h2><p>Beautifully handcrafted. Made to be you.</p></div>
+      <div className="shop-results"><header className="shop-toolbar"><div><h2 id="collection-title">{favoritesOnly ? 'Saved Creations' : 'All Creations'}</h2><p>Beautifully handcrafted. Made to be you.</p></div>
         <div className="shop-toolbar__controls"><button type="button" className="mobile-filter-trigger" aria-haspopup="dialog" aria-expanded={drawerOpen} onClick={() => { setDraft(filters); setDrawerOpen(true); }}><Icon name="filter" size={18} />Filters{hasShopFilters(filters) && <span className="filter-dot" />}</button>
           <label className="shop-sort">Sort by<select value={filters.sort} onChange={event => update({ ...filters, sort: event.target.value, page: 1 })}>{SORT_OPTIONS.map(([value, name]) => <option key={value} value={value}>{name}</option>)}</select></label>
         </div>
       </header>
       <div className="shop-result-meta"><p aria-live="polite">{loading ? 'Discovering your next favourite…' : error ? 'Collection temporarily unavailable' : `${Math.min(loadedCount, products.data?.total || 0)} of ${products.data?.total || 0} ${(products.data?.total || 0) === 1 ? 'creation' : 'creations'}`}</p>{hasShopFilters(filters) && <button type="button" className="filter-clear" onClick={clear}>Clear filters</button>}</div>
       {(cartError || wishlistError) && <p className="shop-notice" role="status">{cartError || wishlistError}</p>}
-      {error ? <ShopErrorState retry={retry} /> : loading ? <ShopLoadingState /> : !products.data?.items.length ? <ShopEmptyState filtered={hasShopFilters(filters)} onClear={clear} /> : <>
+      {error ? <ShopErrorState retry={retry} /> : loading ? <ShopLoadingState /> : !products.data?.items.length ? favoritesOnly && !hasShopFilters(filters) ? <EmptyState title={ids.length ? 'Your saved creations are currently unavailable.' : 'Your favorites are waiting.'} to="/shop" action="Explore the shop">Tap the heart on a creation to save it here.</EmptyState> : <ShopEmptyState filtered={hasShopFilters(filters)} onClear={clear} /> : <>
         <ProductGrid products={visibleProducts} variant="shop" />
         {hasMore && <div className="shop-load-more"><div ref={loadMoreSentinel} className="shop-load-more__sentinel" aria-hidden="true" />{moreError && <p role="alert">We couldn’t load more creations. Please try again.</p>}<button type="button" className="button button--outline" onClick={loadMore} disabled={loadingMore}>{loadingMore ? 'Loading more…' : moreError ? 'Try again' : 'Load more creations'}</button></div>}
       </>}

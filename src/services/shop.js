@@ -10,10 +10,12 @@ export async function getShopCategories() {
   return data;
 }
 
-export async function getShopProducts(filters, categories) {
-  if (!isSupabaseConfigured) return filterLocalProducts(collectionProducts, filters);
+export async function getShopProducts(filters, categories, favoriteIds = null) {
+  if (!isSupabaseConfigured) return filterLocalProducts(favoriteIds === null ? collectionProducts : collectionProducts.filter(product => favoriteIds.includes(product.id)), filters);
+  if (favoriteIds?.length === 0) return { items: [], total: 0, preview: false };
   const query = buildShopQuery(requireSupabase(), filters, categories);
   if (!query) return { items: [], total: 0, preview: false };
+  if (favoriteIds !== null) query.in('id', favoriteIds);
   const { data, count, error } = await query;
   if (error) throw error;
   return { items: data, total: count || 0, preview: false };

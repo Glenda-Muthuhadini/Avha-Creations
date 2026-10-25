@@ -57,7 +57,7 @@ try {
     for (const [key, value] of url.searchParams) {
       if (key === 'price' && value.startsWith('gte.')) rows = rows.filter(item => Number(item.price) >= Number(value.slice(4)));
       if (key === 'price' && value.startsWith('lte.')) rows = rows.filter(item => Number(item.price) <= Number(value.slice(4)));
-      if (['category_id', 'stock_status'].includes(key) && value.startsWith('in.')) {
+      if (['id', 'category_id', 'stock_status'].includes(key) && value.startsWith('in.')) {
         const allowed = value.slice(4, -1).split(',');
         rows = rows.filter(item => allowed.includes(item[key]));
       }
@@ -153,7 +153,16 @@ try {
   await page.getByRole('button', { name: 'Add Creation 00 to wishlist' }).click();
   await page.reload(); await resultCount(20);
   assert.equal(await page.getByRole('button', { name: 'Remove Creation 00 from wishlist' }).getAttribute('aria-pressed'), 'true');
+  await page.getByRole('link', { name: 'Favorites, 1 saved product', exact: true }).click();
+  await page.waitForURL('**/favorites');
+  await resultCount(1);
+  assert.equal(await cards.locator('h3').textContent(), 'Creation 00');
+  assert.equal(requests.at(-1).searchParams.get('id'), `in.(${products[0].id})`);
+  assert.equal(await page.getByRole('navigation', { name: 'Footer navigation' }).getByRole('link', { name: 'Favorites', exact: true }).getAttribute('href'), '/favorites');
   await page.getByRole('button', { name: 'Remove Creation 00 from wishlist' }).click();
+  await page.getByRole('heading', { name: 'Your favorites are waiting.' }).waitFor();
+  assert.equal(await page.getByRole('link', { name: 'Favorites, 0 saved products', exact: true }).count(), 1);
+  await page.goto(origin + '/shop'); await resultCount(20);
   await cards.first().getByRole('button', { name: 'Add to Cart', exact: true }).click();
   assert.equal(await page.locator('.site-header .cart-link').count(), 0);
   assert.equal(new URL(page.url()).pathname, '/shop');

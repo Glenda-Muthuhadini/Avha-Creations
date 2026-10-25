@@ -24,6 +24,7 @@ export default function App() {
     <Route element={<PublicLayout />}>
       <Route index element={<HomePage />} />
       <Route path="shop" element={<ShopPage />} />
+      <Route path="favorites" element={<ShopPage key="favorites" favoritesOnly />} />
       <Route path="shop/:slug" element={<DetailPage kind="products" />} />
       <Route path="hair-services" element={<HairServicesPage />} />
       <Route path="hair-services/:slug" element={<DetailPage kind="services" />} />

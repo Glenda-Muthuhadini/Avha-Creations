@@ -226,6 +226,7 @@ Future customer uploads must validate scoped order authorization, MIME signature
 | --- | --- |
 | `/` | Photographic campaign homepage, dynamic catalogue previews, social/contact sections |
 | `/shop` | Active product query, loading/error/empty states and reusable grid |
+| `/favorites` | Saved creations, filters, incremental loading and removal, using the browser-local wishlist |
 | `/shop/:slug` | Active product details, image gallery and add-to-bag for available products |
 | `/hair-services` | Active hair service query with reusable cards |
 | `/hair-services/:slug` | Service details and contact enquiry link |
@@ -330,7 +331,7 @@ Mobile-first CSS covers mobile, tablet and desktop; navigation becomes a disclos
 | `SocialGallery` | Cream/blush inspiration gallery linking to the supplied Instagram account |
 | `ContactCTA` | Location/maps, real WhatsApp enquiry and appointment links |
 
-Shared `Header` and `Footer` provide public navigation, SVG line icons and `SocialLinks`. Every public route uses the same `Header` through `PublicLayout`, matching the Shop page's warm translucent background, rounded lower corners, logo sizing, navigation, socials and booking action. There is no shopping-bag icon or cart counter in the header, and the homepage has no separate floating-header variant. Cart functionality remains available on `/cart`. No Facebook page URL was supplied, so its icon is explicitly labelled as an enquiry and opens `/contact#social`; it does not invent a Facebook profile. The contact page explains this fallback. The social gallery is a curated editorial inspiration gallery, **not a live Instagram feed or a claim that generated portraits are AVHA clients**.
+Shared `Header` and `Footer` provide public navigation, SVG line icons and `SocialLinks`. Every public route uses the same `Header` through `PublicLayout`, matching the Shop page's warm translucent background, rounded lower corners, logo sizing, navigation, socials and booking action. The header includes a heart linking to `/favorites` with the live saved-product count; the footer includes a Favorites text link. Favorites use the existing browser-local wishlist and survive refresh. The Favorites page shows saved active products with the same filters and 20-product scroll batches as the shop; removing a heart updates both the list and header count. There is no shopping-bag icon or cart counter in the header, and the homepage has no separate floating-header variant. Cart functionality remains available on `/cart`. No Facebook page URL was supplied, so its icon is explicitly labelled as an enquiry and opens `/contact#social`; it does not invent a Facebook profile. The contact page explains this fallback. The social gallery is a curated editorial inspiration gallery, **not a live Instagram feed or a claim that generated portraits are AVHA clients**.
 
 ### Dynamic content and preview boundaries
 
