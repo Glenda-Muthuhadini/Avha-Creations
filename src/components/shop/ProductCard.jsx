@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import Price from './Price';
-import ProductImage from './ProductImage';
+import ProductGallery from './ProductGallery';
 import Icon from '../common/Icon';
 import { useCart } from '../../context/CartContext';
 import { useWishlist } from '../../context/WishlistContext';
@@ -11,7 +11,7 @@ export default function ProductCard({ product, variant = 'default' }) {
   const shop = variant === 'shop';
   const to = product.preview && !shop ? `/contact?creation=${encodeURIComponent(product.name)}` : `/shop/${product.slug}`;
   return <article className={`catalogue-card catalogue-card--${variant}`}>
-    <Link className="product-photo-link" to={to} aria-label={`View ${product.name}`}><ProductImage product={product} /></Link>
+    <ProductGallery key={product.id} product={product} to={to} />
     {shop && <WishlistButton product={product} />}
     <div className="card-content"><Link to={to}><h3>{product.name}</h3></Link>{product.price == null ? <span className="price">Enquire for pricing</span> : <Price value={product.price} from={product.preview} />}
       {shop && <ProductActions product={product} />}

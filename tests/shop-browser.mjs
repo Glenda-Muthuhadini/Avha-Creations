@@ -30,6 +30,7 @@ const products = Array.from({ length: 27 }, (_, index) => ({
 let mode = 'normal';
 let releaseProducts;
 let productGate = null;
+let productBlocked;
 const requests = [];
 try {
   for (let attempt = 0; attempt < 60; attempt++) {
@@ -50,7 +51,7 @@ try {
     if (table === 'store_settings') return route.fulfill({ headers, body: JSON.stringify({ whatsapp_number: '27762123234' }) });
     if (table !== 'products') return route.fulfill({ headers, body: '[]' });
     requests.push(url);
-    if (productGate) await productGate;
+    if (productGate) { productBlocked?.(); await productGate; }
     if (mode === 'error') return route.fulfill({ status: 503, headers, body: JSON.stringify({ message: 'private technical error: should not appear in UI' }) });
     let rows = mode === 'empty' ? [] : products.filter(item => url.searchParams.get('active') !== 'eq.true' || item.active);
     for (const [key, value] of url.searchParams) {
@@ -104,7 +105,7 @@ try {
   await page.goto(origin + '/shop');
   await page.getByRole('status', { name: 'Discovering creations' }).waitFor();
   releaseProducts(); productGate = null;
-  await resultCount(12);
+  await resultCount(20);
   const categoryNav = page.getByRole('navigation', { name: 'Shop by category' });
   await categoryNav.getByRole('button', { name: 'Dresses', exact: true }).waitFor();
   assert.equal(await categoryNav.getByRole('button', { name: 'Accessories', exact: true }).count(), 0);
@@ -114,7 +115,7 @@ try {
   assert.ok(requests.at(-1).searchParams.get('or').includes('name.ilike.%dress%'));
   assert.ok((await cards.allTextContents()).every(name => name.toLowerCase().includes('dress')));
   await page.goto(origin + '/shop');
-  await resultCount(12);
+  await resultCount(20);
   const categoryImage = await page.locator('.category-card img').first().evaluate(image => {
     const { width, height } = image.getBoundingClientRect();
     return { width, height };
@@ -123,25 +124,43 @@ try {
   assert.equal(await categoryNav.evaluate(element => getComputedStyle(element).position), 'relative');
   assert.ok(requests[0].searchParams.get('select').includes('category_id'));
   assert.equal(requests[0].searchParams.get('active'), 'eq.true');
-  assert.equal(requests[0].searchParams.get('limit'), '12');
+  assert.equal(requests[0].searchParams.get('limit'), '20');
+  mode = 'error';
   await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
-  await resultCount(24);
-  assert.ok(requests.some(request => request.searchParams.get('offset') === '12'));
-  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
+  await page.locator('.shop-load-more [role="alert"]').waitFor();
+  assert.equal(await cards.count(), 20, 'A later-page failure preserves the first batch');
+  assert.equal(await page.getByText('private technical error: should not appear in UI', { exact: false }).count(), 0);
+  mode = 'normal';
+  await page.locator('.shop-load-more').getByRole('button', { name: 'Try again', exact: true }).click();
   await resultCount(26);
-  assert.equal(requests.at(-1).searchParams.get('offset'), '24');
+  assert.equal(requests.at(-1).searchParams.get('offset'), '20');
   assert.equal(await page.locator('.shop-load-more').count(), 0);
+  // Ignore a delayed second batch if the visitor changes category while it loads.
+  await page.goto(origin + '/shop'); await resultCount(20);
+  productGate = new Promise(resolve => { releaseProducts = resolve; });
+  const blocked = new Promise(resolve => { productBlocked = resolve; });
+  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
+  await blocked;
+  productGate = null;
+  productBlocked = undefined;
+  await categoryNav.getByRole('button', { name: 'Bags', exact: true }).click();
+  await resultCount(5);
+  releaseProducts();
+  await page.waitForTimeout(300);
+  assert.equal(await cards.count(), 5, 'Old batches must not enter the selected category');
+  assert.ok((await cards.locator('h3').allTextContents()).every(name => ['Creation 01', 'Creation 07', 'Creation 13', 'Creation 19', 'Creation 25'].includes(name)));
+  await page.goto(origin + '/shop'); await resultCount(20);
   await page.getByRole('button', { name: 'Add Creation 00 to wishlist' }).click();
-  await page.reload(); await resultCount(12);
+  await page.reload(); await resultCount(20);
   assert.equal(await page.getByRole('button', { name: 'Remove Creation 00 from wishlist' }).getAttribute('aria-pressed'), 'true');
   await page.getByRole('button', { name: 'Remove Creation 00 from wishlist' }).click();
   await cards.first().getByRole('button', { name: 'Add to Cart', exact: true }).click();
   assert.equal(await page.locator('.site-header .cart-link').count(), 0);
   assert.equal(new URL(page.url()).pathname, '/shop');
-  await page.reload(); await resultCount(12);
+  await page.reload(); await resultCount(20);
   await page.goto(origin + '/cart');
   assert.ok((await page.locator('.cart-items').textContent()).includes('Creation 00'));
-  await page.goto(origin + '/shop'); await resultCount(12);
+  await page.goto(origin + '/shop'); await resultCount(20);
   assert.equal(await cards.nth(1).getByRole('button', { name: 'Out of Stock' }).isDisabled(), true);
   const madeToOrderLink = cards.nth(2).getByRole('link', { name: 'Order Now' });
   const madeToOrder = new URL(await madeToOrderLink.getAttribute('href'));
@@ -152,17 +171,15 @@ try {
   await cards.first().locator('img').evaluate(image => image.dispatchEvent(new Event('error')));
   assert.equal(await cards.first().locator('.product-image-fallback').count(), 1);
   await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
-  await resultCount(24);
-  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
   await resultCount(26);
   assert.equal(await page.locator('.shop-load-more').count(), 0);
-  assert.equal(requests.at(-1).searchParams.get('offset'), '24');
-  await page.goto(origin + '/shop'); await resultCount(12);
+  assert.equal(requests.at(-1).searchParams.get('offset'), '20');
+  await page.goto(origin + '/shop'); await resultCount(20);
   await selectSidebarFilter('Bags'); await resultCount(5);
   assert.ok(new URL(page.url()).searchParams.getAll('category').includes('bags'));
   await selectSidebarFilter('Jewellery'); await resultCount(9);
-  await clearSidebarFilters(); await resultCount(12);
-  await selectSidebarFilter('In Stock'); await resultCount(12);
+  await clearSidebarFilters(); await resultCount(20);
+  await selectSidebarFilter('In Stock'); await resultCount(20);
   assert.equal(requests.at(-1).searchParams.get('stock_status'), 'in.(in_stock)');
   await clearSidebarFilters();
   await sidebar.getByLabel('Maximum price').fill('100'); await resultCount(3);
@@ -170,7 +187,7 @@ try {
   await page.keyboard.press('ArrowRight');
   await page.waitForFunction(input => input.value === '110', await sidebar.getByLabel('Maximum price').elementHandle());
   assert.equal(await sidebar.getByLabel('Maximum price').inputValue(), '110');
-  await clearSidebarFilters(); await resultCount(12);
+  await clearSidebarFilters(); await resultCount(20);
   await page.getByLabel('Sort by').selectOption('price-desc');
   await page.waitForFunction(() => document.querySelector('.catalogue-card--shop h3')?.textContent === 'Creation 25');
   await page.getByLabel('Sort by').selectOption('newest');
@@ -182,10 +199,10 @@ try {
   await page.getByLabel('Sort by').selectOption('featured');
   await sidebar.getByLabel('Minimum price').fill('1400');
   await page.getByRole('heading', { name: 'No creations found' }).waitFor();
-  await page.getByRole('button', { name: 'Clear Filters', exact: true }).click(); await resultCount(12);
+  await page.getByRole('button', { name: 'Clear Filters', exact: true }).click(); await resultCount(20);
   await page.getByRole('navigation', { name: 'Shop by category' }).getByRole('button', { name: 'Bags', exact: true }).click(); await resultCount(5);
   await page.reload(); await resultCount(5);
-  await page.goto(origin + '/shop'); await resultCount(12);
+  await page.goto(origin + '/shop'); await resultCount(20);
   await cards.first().getByRole('link', { name: 'View Creation 00', exact: true }).click();
   await page.waitForURL('**/shop/creation-0');
   await page.getByRole('heading', { name: 'Creation 00', exact: true }).waitFor();
@@ -193,7 +210,7 @@ try {
   assert.equal(await page.locator('.site-header .cart-link').count(), 0);
   await page.goto(origin + '/cart');
   assert.ok((await page.locator('.cart-summary').textContent()).includes('R60'));
-  await page.goto(origin + '/shop'); await resultCount(12);
+  await page.goto(origin + '/shop'); await resultCount(20);
   await mkdir('test-results', { recursive: true });
   await page.screenshot({ path: 'test-results/shop-database-desktop.png', fullPage: true });
   for (const width of [320, 375, 768, 1024, 1440, 1920]) {
@@ -214,7 +231,7 @@ try {
   assert.equal(await page.getByRole('button', { name: 'Filters', exact: true }).evaluate(button => button === document.activeElement), true);
   await page.getByRole('button', { name: 'Filters', exact: true }).click();
   await drawer.getByRole('button', { name: 'Clear all', exact: true }).click();
-  await drawer.getByRole('button', { name: 'Apply Filters' }).click(); await resultCount(12);
+  await drawer.getByRole('button', { name: 'Apply Filters' }).click(); await resultCount(20);
   await page.screenshot({ path: 'test-results/shop-database-mobile.png', fullPage: true });
   mode = 'empty'; await page.reload();
   await page.getByRole('heading', { name: 'New creations are coming soon.' }).waitFor();
@@ -223,7 +240,7 @@ try {
   await page.getByRole('heading', { name: 'We couldn’t load the creations.' }).waitFor();
   assert.equal(await page.getByText('private technical error: should not appear in UI', { exact: false }).count(), 0);
   mode = 'normal';
-  await page.getByRole('button', { name: 'Try Again', exact: true }).click(); await resultCount(12);
+  await page.getByRole('button', { name: 'Try Again', exact: true }).click(); await resultCount(20);
   assert.deepEqual(runtimeErrors, []);
   console.log('Shop browser checks passed: Supabase request contract, active-only inventory, pagination, categories, price/stock filters, sorting, wishlist, cart/detail flow, WhatsApp, image fallbacks, skeletons, empty/error/retry, mobile draft/Apply/Escape/focus, and six responsive widths.');
 } catch (error) {

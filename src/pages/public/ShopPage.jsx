@@ -49,7 +49,7 @@ export default function ShopPage() {
   const loading = categoryResource.loading || products.loading || (!products.data && !products.error && !categoryResource.error);
   const error = categoryResource.error || products.error;
   const loadMore = useCallback(async () => {
-    if (!products.data || !hasMore || loadMoreLocked.current) return;
+    if (!products.data || loading || error || !hasMore || loadMoreLocked.current || activeFilterKey.current !== currentFilterKey) return;
     loadMoreLocked.current = true;
     const requestedFilterKey = currentFilterKey;
     const requestedPage = nextPage;
@@ -72,7 +72,7 @@ export default function ShopPage() {
         setLoadingMore(false);
       }
     }
-  }, [products.data, hasMore, currentFilterKey, nextPage, filters, categoryResource.data]);
+  }, [products.data, loading, error, hasMore, currentFilterKey, nextPage, filters, categoryResource.data]);
   useEffect(() => {
     requestId.current += 1;
     loadMoreLocked.current = false;
@@ -85,7 +85,7 @@ export default function ShopPage() {
     if (!hasMore || loading || error || moreError || !loadMoreSentinel.current) return undefined;
     const observer = new IntersectionObserver(entries => {
       if (entries.some(entry => entry.isIntersecting)) loadMore();
-    }, { rootMargin: '500px 0px' });
+    }, { rootMargin: '200px 0px' });
     observer.observe(loadMoreSentinel.current);
     return () => observer.disconnect();
   }, [hasMore, loading, error, moreError, loadMore]);
@@ -107,8 +107,7 @@ export default function ShopPage() {
       {(cartError || wishlistError) && <p className="shop-notice" role="status">{cartError || wishlistError}</p>}
       {error ? <ShopErrorState retry={retry} /> : loading ? <ShopLoadingState /> : !products.data?.items.length ? <ShopEmptyState filtered={hasShopFilters(filters)} onClear={clear} /> : <>
         <ProductGrid products={visibleProducts} variant="shop" />
-        {products.data.preview && <p className="shop-preview-note">Handmade to order. Estimated starting prices shown; contact AVHA to confirm your colours, details and final pricing.</p>}
-        {hasMore && <div className="shop-load-more"><div ref={loadMoreSentinel} className="shop-load-more__sentinel" aria-hidden="true" />{moreError && <p role="alert">We couldn’t load more creations. {moreError.message}</p>}<button type="button" className="button button--outline" onClick={loadMore} disabled={loadingMore}>{loadingMore ? 'Loading more…' : moreError ? 'Try again' : 'Load more creations'}</button></div>}
+        {hasMore && <div className="shop-load-more"><div ref={loadMoreSentinel} className="shop-load-more__sentinel" aria-hidden="true" />{moreError && <p role="alert">We couldn’t load more creations. Please try again.</p>}<button type="button" className="button button--outline" onClick={loadMore} disabled={loadingMore}>{loadingMore ? 'Loading more…' : moreError ? 'Try again' : 'Load more creations'}</button></div>}
       </>}
       </div>
     </section>

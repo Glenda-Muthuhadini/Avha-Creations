@@ -1,10 +1,10 @@
-const product = (slug, name, filename, price, categories) => ({
+const product = (slug, name, filename, price, categories, extraViews = []) => ({
   id: `collection-${slug}`,
   slug,
   name,
-  images: [`/images/products/optimized/${slug}-800.webp`],
+  images: [slug, ...extraViews].map(view => `/images/products/optimized/${view}-800.webp`),
   image_srcset: `/images/products/optimized/${slug}-480.webp 480w, /images/products/optimized/${slug}-800.webp 800w`,
-  original_image: `/images/products/${encodeURIComponent(filename)}.png`,
+  original_image: `/images/products/${filename.split('/').map(encodeURIComponent).join('/')}.png`,
   price,
   categories,
   active: true,
@@ -40,4 +40,14 @@ export const collectionProducts = [
   product('pink-crochet-ruffled-romper', 'Pink Crochet Ruffled Romper', 'Pink Crochet Ruffled Romper mannequin', 550, ['crochet', 'occasion-pieces']),
   product('pink-crochet-top-pastel-skirt-set', 'Pink Crochet Top & Pastel Skirt Set', 'Pink Crochet Top and Pastel Skirt Set', 600, ['crochet', 'occasion-pieces']),
   product('red-ribbed-crochet-dress', 'Red Ribbed Crochet Dress', 'Red Ribbed Crochet Dress on Gold Stand', 750, ['dresses', 'crochet', 'occasion-pieces']),
+  product('black-crochet-fringe-bag', 'Black Crochet Fringe Bag', 'optimized/Bohemian Black Fringe Bag in Sunlight', 550, ['bags', 'crochet']),
+  product('blue-yellow-crochet-sunhat', 'Blue & Yellow Crochet Sunhat', 'optimized/ChatGPT Image Oct 25, 2026, 06_26_00 PM', 300, ['hats-fascinators', 'crochet'], ['blue-yellow-crochet-sunhat-worn']),
+  product('mustard-crochet-hat-scarf-set', 'Mustard Crochet Hat & Scarf Set', 'optimized/Cozy Mustard Crochet Hat and Scarf', 450, ['hats-fascinators', 'crochet', 'accessories'], ['mustard-crochet-hat-scarf-set-worn']),
+  product('crochet-santa-hat', 'Crochet Santa Hat', 'optimized/Crocheted Santa Hats on Mannequins', 200, ['hats-fascinators', 'crochet', 'occasion-pieces']),
+  product('emerald-crochet-baby-dress-set', 'Emerald Crochet Baby Dress Set', 'optimized/Emerald Crochet Baby Dress Set', 450, ['dresses', 'crochet', 'occasion-pieces']),
+  product('ruffle-crochet-scrunchies', 'Ruffle Crochet Scrunchies', 'optimized/Handmade Crochet Scrunchies in Warm Sunlight', 40, ['crochet', 'accessories']),
+  product('yellow-red-crochet-beanie', 'Yellow & Red Crochet Beanie', 'optimized/Sunlit Crochet Beanie Portrait', 200, ['hats-fascinators', 'crochet']),
+  product('red-looped-yarn-handbag', 'Red Looped-Yarn Handbag', 'optimized/Sunlit Red Looped-Yarn Handbag', 450, ['bags', 'crochet']),
+  product('crochet-bucket-hat', 'Crochet Bucket Hat', 'optimized/Vibrant Crochet Bucket Hat Display', 200, ['hats-fascinators', 'crochet']),
+  product('rasta-crochet-hat-earring-set', 'Rasta Crochet Hat & Earring Set', 'optimized/Vibrant Crochet Hat and Earring Portrait', 280, ['hats-fascinators', 'jewellery', 'crochet', 'accessories']),
 ];

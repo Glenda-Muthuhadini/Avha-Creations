@@ -1,4 +1,4 @@
-export const PAGE_SIZE = 12;
+export const PAGE_SIZE = 20;
 export const PRICE_LIMIT = 1500;
 export const SORT_OPTIONS = [
   ['featured', 'Featured'], ['newest', 'Newest'], ['price-asc', 'Price: Low to High'],
@@ -29,6 +29,7 @@ export function writeShopFilters(filters) {
 }
 export const hasShopFilters = filters => filters.categories.length > 0 || filters.min > 0 || filters.max < PRICE_LIMIT || filters.availability.length > 0;
 export function filterLocalProducts(products, filters) {
+  const positions = new Map(products.map((product, index) => [product.id, index]));
   const items = products.filter(product => product.active &&
     (!filters.categories.length || filters.categories.some(category => product.categories.includes(category))) &&
     Number(product.price) >= filters.min && (filters.max === PRICE_LIMIT || Number(product.price) <= filters.max) &&
@@ -36,7 +37,7 @@ export function filterLocalProducts(products, filters) {
   items.sort((a, b) => {
     if (filters.sort === 'price-asc') return Number(a.price) - Number(b.price) || a.name.localeCompare(b.name);
     if (filters.sort === 'price-desc') return Number(b.price) - Number(a.price) || a.name.localeCompare(b.name);
-    if (filters.sort === 'newest') return String(b.created_at || '').localeCompare(String(a.created_at || '')) || a.name.localeCompare(b.name);
+    if (filters.sort === 'newest') return String(b.created_at || '').localeCompare(String(a.created_at || '')) || positions.get(b.id) - positions.get(a.id);
     if (filters.sort === 'name') return a.name.localeCompare(b.name);
     return Number(b.featured) - Number(a.featured);
   });

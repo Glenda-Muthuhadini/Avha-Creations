@@ -74,6 +74,21 @@ em { font-weight: 400; color: var(--gold); }
 .detail-grid { display: grid; gap: 30px; }
 .detail-gallery { display: grid; gap: 14px; }
 .detail-gallery img, .detail-gallery .image-placeholder { border-radius: 10px; aspect-ratio: 1; }
+.product-gallery { min-width: 0; }
+.product-gallery__photo { position: relative; overflow: hidden; touch-action: pan-y; }
+.product-gallery__photo > img, .product-gallery__photo > a > img { display: block; width: 100%; object-fit: cover; }
+.product-gallery__count { position: absolute; bottom: 10px; right: 10px; padding: 5px 9px; border-radius: 20px; color: #fff3df; background: #26190de6; font-size: .7rem; pointer-events: none; }
+.product-gallery__controls { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 8px; }
+.product-gallery__choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.product-gallery__choices button { padding: 2px; border: 2px solid transparent; border-radius: 8px; background: transparent; }
+.product-gallery__choices button.is-active { border-color: #e6bb80; }
+.product-gallery__choices img { width: 56px; height: 56px; object-fit: cover; }
+.product-gallery--card .product-gallery__controls { position: absolute; bottom: 10px; left: 10px; justify-content: center; padding: 2px; border-radius: 24px; background: #26190de6; border: 1px solid #fff3df66; box-shadow: 0 2px 8px #0004; }
+.product-gallery--card .product-gallery__choices { gap: 0; }
+.product-gallery--card .product-gallery__choices button { display: grid; place-items: center; width: 24px; height: 24px; border: 0; }
+.product-gallery--card .product-gallery__choices button::after { content: ''; width: 6px; height: 6px; border-radius: 50%; border: 1px solid #fff3df; background: transparent; }
+.product-gallery--card .product-gallery__choices button.is-active::after { background: #ffe4ba; box-shadow: 0 0 0 1px #26190d, 0 0 0 2px #ffe4ba; }
+.product-gallery__play { background: transparent; border: 1px solid var(--border); color: var(--gold); border-radius: 20px; padding: 10px 14px; min-height: 44px; font-size: .75rem; }
 .detail-copy { display: flex; flex-direction: column; align-items: start; gap: 20px; }
 .description { white-space: pre-line; }
 .detail-copy p { margin: 0; }

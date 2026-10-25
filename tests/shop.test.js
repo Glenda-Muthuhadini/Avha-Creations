@@ -3,6 +3,18 @@ import assert from 'node:assert/strict';
 import { readShopFilters, writeShopFilters, filterLocalProducts, buildShopQuery, PAGE_SIZE } from '../src/utils/shop.js';
 import { categoryPresentation } from '../src/data/shopCategories.js';
 import { collectionProducts } from '../src/data/products.js';
+import { existsSync } from 'node:fs';
+
+test('catalogue photo groups use existing assets and keep alternate views in one product', () => {
+  assert.equal(new Set(collectionProducts.map(product => product.slug)).size, collectionProducts.length);
+  const galleries = collectionProducts.filter(product => product.images.length > 1);
+  assert.deepEqual(galleries.map(product => product.slug), ['blue-yellow-crochet-sunhat', 'mustard-crochet-hat-scarf-set']);
+  for (const product of collectionProducts) {
+    for (const image of [...product.images, product.original_image]) {
+      assert.ok(existsSync(new URL(`../public${decodeURIComponent(image)}`, import.meta.url)), `Missing ${image}`);
+    }
+  }
+});
 
 test('the Dresses tile replaces Accessories, even when database categories still contain accessories', () => {
   const categories = categoryPresentation([{ id: 'accessories-id', slug: 'accessories', name: 'Accessories' }]);
@@ -27,36 +39,50 @@ test('shop URL state normalizes invalid input and round-trips selections', () =>
 
 test('local supplied collection filters category unions, prices and availability without inventing inventory', () => {
   const run = query => filterLocalProducts(collectionProducts, readShopFilters(new URLSearchParams(query)));
-  assert.equal(run('category=bags').total, 5);
-  assert.equal(run('category=bags&category=jewellery').total, 7);
+  assert.equal(run('category=bags').total, 7);
+  assert.equal(run('category=bags&category=jewellery').total, 10);
   const dresses = run('category=dresses');
-  assert.equal(dresses.total, 5);
+  assert.equal(dresses.total, 6);
   assert.deepEqual(dresses.items.map(item => item.slug), [
     'fuchsia-crochet-fringe-dress',
     'pastel-rainbow-crochet-dress',
     'vibrant-orange-crochet-fringe-dress',
     'white-crochet-fringe-dress',
     'red-ribbed-crochet-dress',
+    'emerald-crochet-baby-dress-set',
   ]);
-  assert.equal(run('max=40').total, 2);
+  assert.equal(run('max=40').total, 3);
   assert.equal(run('availability=in_stock').total, 0);
-  assert.equal(run('availability=made_to_order').total, 25);
+  assert.equal(run('availability=made_to_order').total, 35);
   assert.equal(run('category=unknown').total, 0);
-  assert.equal(run('min=500').total, 13);
-  assert.deepEqual(run('sort=price-asc').items.map(item => item.price), [30, 30, 80, 200, 250, 350, 450, 450, 450, 450, 450, 480]);
+  assert.equal(run('min=500').total, 14);
+  assert.deepEqual(run('sort=price-asc').items.map(item => item.price), collectionProducts.map(item => item.price).sort((a, b) => a - b).slice(0, PAGE_SIZE));
   assert.ok(run('').items.every(item => item.preview && item.stock_status === 'made_to_order'));
 });
 
-test('the expanded local catalogue loads in three 12-product pages', () => {
+test('the expanded local catalogue loads 20 products first, then the remaining 15', () => {
   const page = value => filterLocalProducts(collectionProducts, readShopFilters(new URLSearchParams(`page=${value}`)));
-  assert.equal(collectionProducts.length, 25);
+  assert.equal(collectionProducts.length, 35);
   assert.equal(page(1).items.length, PAGE_SIZE);
-  assert.equal(page(2).items.length, PAGE_SIZE);
-  assert.equal(page(3).items.length, 1);
-  assert.equal(page(3).total, 25);
+  assert.equal(page(1).items.length, 20);
+  assert.equal(page(2).items.length, 15);
+  assert.equal(page(3).items.length, 0);
+  assert.equal(new Set([...page(1).items, ...page(2).items].map(item => item.id)).size, 35);
+  assert.equal(page(3).total, 35);
 });
 
-test('Supabase queries use active-only reads, server filtering and deterministic 12-item pagination', () => {
+test('category, price and availability filters combine and newest uses catalogue order without dates', () => {
+  const filters = readShopFilters(new URLSearchParams('category=bags&min=450&max=500&availability=made_to_order&sort=price-desc'));
+  const result = filterLocalProducts(collectionProducts, filters);
+  assert.equal(result.total, 5);
+  assert.ok(result.items.every(item => item.categories.includes('bags') && item.price >= 450 && item.price <= 500 && item.stock_status === 'made_to_order'));
+  const newest = filterLocalProducts(collectionProducts, readShopFilters(new URLSearchParams('sort=newest')));
+  assert.equal(newest.items[0].slug, 'rasta-crochet-hat-earring-set');
+  const dated = collectionProducts.slice(0, 2).map((item, i) => ({ ...item, created_at: `2026-10-${i ? '01' : '25'}` }));
+  assert.equal(filterLocalProducts(dated, readShopFilters(new URLSearchParams('sort=newest'))).items[0].id, dated[0].id);
+});
+
+test('Supabase queries use active-only reads, server filtering and deterministic 20-item pagination', () => {
   const calls = [];
   const query = new Proxy({}, { get: (_, method) => (...args) => { calls.push([method, ...args]); return query; } });
   const filters = readShopFilters(new URLSearchParams('category=bags&min=100&max=700&availability=in_stock&sort=price-asc&page=3'));
@@ -84,7 +110,7 @@ test('pagination and default open-ended upper price handle retain premium produc
   const items = Array.from({ length: 28 }, (_, index) => ({ ...collectionProducts[0], id: `item-${index}`, price: index === 0 ? 2000 : 250, name: `Creation ${index}`, active: index !== 1 }));
   const result = filterLocalProducts(items, readShopFilters(new URLSearchParams('page=2')));
   assert.equal(result.total, 27);
-  assert.equal(result.items.length, 12);
+  assert.equal(result.items.length, 7);
   const firstPage = filterLocalProducts(items, readShopFilters(new URLSearchParams()));
   assert.ok(firstPage.items.some(item => item.price === 2000));
   assert.equal(filterLocalProducts(items, readShopFilters(new URLSearchParams('max=1490'))).total, 26);

@@ -103,14 +103,12 @@ try {
   await page.goto(origin + '/shop');
   await page.locator('.catalogue-card').first().waitFor();
   assert.equal(await page.locator('.shop-signature').count(), 0);
-  assert.equal(await page.locator('.catalogue-card').count(), 12);
+  assert.equal(await page.locator('.catalogue-card').count(), 20);
   await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
-  await page.getByRole('heading', { name: 'White Crochet Fringe Dress', exact: true }).waitFor();
-  assert.equal(await page.locator('.catalogue-card').count(), 24);
-  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
-  await page.getByRole('heading', { name: 'Red Ribbed Crochet Dress', exact: true }).waitFor();
-  assert.equal(await page.locator('.catalogue-card').count(), 25);
-  assert.ok((await page.locator('.shop-preview-note').textContent()).includes('Estimated starting prices'));
+  await page.getByRole('heading', { name: 'Rasta Crochet Hat & Earring Set', exact: true }).waitFor();
+  assert.equal(await page.locator('.catalogue-card').count(), 35);
+  assert.equal(await page.locator('.shop-preview-note').count(), 0);
+  assert.equal(await page.getByText('Estimated starting prices', { exact: false }).count(), 0);
   for (const [name, price] of [['Turquoise Crochet Bikini', 'From R200'], ['Crocheted Sunflower Scrunchie Pair', 'From R80']]) {
     const product = page.locator('.catalogue-card').filter({ has: page.getByRole('heading', { name, exact: true }) });
     assert.equal(await product.count(), 1);
@@ -144,8 +142,85 @@ try {
   }
   const prices = await page.locator('.catalogue-card .price').allTextContents();
   assert.equal(prices.filter(price => /^From R250/.test(price)).length, 1);
-  assert.equal(prices.filter(price => /^From R450/.test(price)).length, 5);
+  assert.equal(prices.filter(price => /^From R450/.test(price)).length, 8);
   assert.equal(prices.filter(price => /^From R30(?:\D|$)/.test(price)).length, 2);
+
+  const sunhat = page.locator('.catalogue-card').filter({ has: page.getByRole('heading', { name: 'Blue & Yellow Crochet Sunhat', exact: true }) });
+  await sunhat.scrollIntoViewIfNeeded();
+  assert.equal(await sunhat.locator('.product-gallery__count').textContent(), '1/2');
+  await sunhat.locator('.product-gallery__photo').hover();
+  await page.waitForFunction(() => document.querySelector('a[href="/shop/blue-yellow-crochet-sunhat"] img')?.getAttribute('src').includes('-worn-'));
+  await sunhat.getByRole('button', { name: 'Show photo 1 of Blue & Yellow Crochet Sunhat' }).click();
+  assert.equal(await sunhat.locator('.product-gallery__count').textContent(), '1/2');
+  await sunhat.getByRole('link', { name: 'View Blue & Yellow Crochet Sunhat', exact: true }).click();
+  const gallery = page.locator('.product-gallery--detail');
+  await gallery.waitFor();
+  await page.mouse.move(0, 0);
+  await page.waitForFunction(() => document.querySelector('.product-gallery--detail .product-gallery__count')?.textContent === '2/2');
+  await gallery.getByRole('button', { name: 'Pause slideshow' }).click();
+  await gallery.getByRole('button', { name: 'Show photo 1 of Blue & Yellow Crochet Sunhat' }).click();
+  assert.equal(await gallery.locator('.product-gallery__count').textContent(), '1/2');
+  const detailPhoto = gallery.locator('.product-gallery__photo > img');
+  assert.ok((await detailPhoto.getAttribute('srcset')).includes('480.webp'));
+  await gallery.getByRole('button', { name: 'Show photo 2 of Blue & Yellow Crochet Sunhat' }).click();
+  assert.equal(await detailPhoto.getAttribute('srcset'), null);
+  await detailPhoto.evaluate(image => image.decode());
+  await page.waitForTimeout(4200);
+  assert.equal(await gallery.locator('.product-gallery__count').textContent(), '2/2');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(origin + '/shop/mustard-crochet-hat-scarf-set');
+  await gallery.waitFor();
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(4200);
+  assert.equal(await gallery.locator('.product-gallery__count').textContent(), '1/2');
+  assert.equal(await gallery.getByRole('button', { name: 'Pause slideshow' }).count(), 0);
+  await gallery.getByRole('button', { name: 'Show photo 2 of Mustard Crochet Hat & Scarf Set' }).click();
+  assert.equal(await gallery.locator('.product-gallery__count').textContent(), '2/2');
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+  await page.screenshot({ path: 'test-results/product-gallery-mobile.png', fullPage: true });
+  await page.goto(origin + '/shop/black-crochet-fringe-bag');
+  await gallery.waitFor();
+  assert.equal(await gallery.locator('button').count(), 0);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+
+  // Exercise the actual supplied catalogue through each category tile.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(origin + '/shop');
+  await page.locator('.catalogue-card').first().waitFor();
+  const categoryNav = page.getByRole('navigation', { name: 'Shop by category' });
+  for (const [name, slug, total] of [
+    ['Hats & Fascinators', 'hats-fascinators', 7], ['Bags', 'bags', 7],
+    ['Jewellery', 'jewellery', 3], ['Crochet', 'crochet', 33],
+    ['Dresses', 'dresses', 6], ['Occasion Pieces', 'occasion-pieces', 21],
+  ]) {
+    const tile = categoryNav.getByRole('button', { name, exact: true });
+    await tile.click();
+    await page.waitForFunction(button => button.getAttribute('aria-pressed') === 'true', await tile.elementHandle());
+    await page.waitForFunction(total => document.querySelector('.shop-result-meta p')?.textContent === `${Math.min(total, 20)} of ${total} creations`, total);
+    assert.equal(new URL(page.url()).searchParams.get('category'), slug);
+    assert.equal(await categoryNav.getByRole('button', { name, exact: true }).getAttribute('aria-pressed'), 'true');
+  }
+  // Toggling the selected tile off resets pagination instead of appending old results.
+  await categoryNav.getByRole('button', { name: 'Occasion Pieces', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('.shop-result-meta p')?.textContent === '20 of 35 creations');
+  assert.equal(new URL(page.url()).searchParams.has('category'), false);
+  await page.locator('.shop-load-more').scrollIntoViewIfNeeded();
+  await page.waitForFunction(() => document.querySelectorAll('.catalogue-card--shop').length === 35);
+  assert.equal(new Set(await page.locator('.catalogue-card--shop h3').allTextContents()).size, 35);
+  await categoryNav.getByRole('button', { name: 'Bags', exact: true }).click();
+  await page.waitForFunction(() => document.querySelectorAll('.catalogue-card--shop').length === 7);
+  assert.equal(await page.locator('.shop-load-more').count(), 0);
+  await page.reload();
+  await page.waitForFunction(() => document.querySelectorAll('.catalogue-card--shop').length === 7);
+  await page.goto(origin + '/shop?category=bags&min=450&max=500&availability=made_to_order');
+  await page.waitForFunction(() => document.querySelectorAll('.catalogue-card--shop').length === 5);
+  await page.goto(origin + '/shop?category=bags&availability=in_stock');
+  await page.getByRole('heading', { name: 'No creations found' }).waitFor();
+  await page.getByRole('button', { name: 'Clear Filters', exact: true }).click();
+  await page.waitForFunction(() => document.querySelectorAll('.catalogue-card--shop').length === 20);
+  await page.getByLabel('Sort by').selectOption('newest');
+  await page.waitForFunction(() => document.querySelector('.catalogue-card--shop h3')?.textContent === 'Rasta Crochet Hat & Earring Set');
+  await page.setViewportSize({ width: 375, height: 900 });
 
   await page.goto(origin + '/cart');
   await page.evaluate(() => localStorage.setItem('avha:cart:v1', JSON.stringify([{ id: '11111111-1111-4111-8111-111111111111', slug: 'test-bag', name: 'Test bag', quantity: 1, unitPriceCents: 45000 }])));
