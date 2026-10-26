@@ -1,6 +1,7 @@
 import Button from '../../components/common/Button';
 import Icon from '../../components/common/Icon';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { hairPhotos } from '../../data/hairPhotography';
 
 const values = [
   ['diamond', 'Authenticity', 'We celebrate individuality and thoughtful beauty.'],
@@ -27,7 +28,7 @@ export default function AboutPage() {
 
     <section className="about-journey container" id="our-journey" aria-labelledby="journey-title">
       <div className="about-journey__image-wrap">
-        <img src="/images/crochet-bag.webp" alt="A handcrafted pink crochet bag, made with care and attention to detail." loading="lazy" />
+        <img src="/images/products/optimized/crimson-crochet-bag-800.webp" srcSet="/images/products/optimized/crimson-crochet-bag-480.webp 480w, /images/products/optimized/crimson-crochet-bag-800.webp 800w" sizes="(min-width: 1024px) 35vw, 100vw" alt="A crimson crochet bag with textured ridges, a butterfly brooch and a gold-tone chain." loading="lazy" />
       </div>
       <div className="about-journey__copy">
         <p className="eyebrow">Our journey</p>
@@ -64,7 +65,7 @@ export default function AboutPage() {
     </section>
 
     <section className="about-roots" aria-labelledby="about-roots-title">
-      <img className="about-roots__image" src="/images/crochet-bag.webp" alt="A pink handmade crochet handbag with gold details." loading="lazy" />
+      <img className="about-roots__image" src={hairPhotos.decorativeLocs.src} srcSet={hairPhotos.decorativeLocs.srcSet} sizes="100vw" alt={hairPhotos.decorativeLocs.alt} loading="lazy" />
       <div className="about-roots__shade" />
       <div className="container about-roots__layout">
         <div><p className="eyebrow">Rooted in community</p><h2 id="about-roots-title">Proudly South African.</h2><p>AVHA CREATIONS is based in Olievenhoutbosch, Centurion, and we are proud to be part of a vibrant, creative community. Our work is inspired by South African culture, its people and the beauty in everyday moments.</p><Button to="/contact">Visit us <Icon name="arrow" size={16} /></Button></div>

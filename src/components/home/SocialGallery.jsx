@@ -1,9 +1,10 @@
 import Icon from '../common/Icon';
 import { useBusiness } from '../../context/BusinessContext';
+import { hairPhotos } from '../../data/hairPhotography';
 const images = [
   ['/images/avha-hero-768.webp', 'Statement mauve crochet hat'],
   ['/images/crochet-bag.webp', 'Handmade pink crochet handbag'],
-  ['/images/cornrows.webp', 'Sculptural cornrow styling'],
+  [hairPhotos.cornrowBun.src, hairPhotos.cornrowBun.alt],
   ['/images/fascinator.webp', 'Champagne occasion fascinator'],
   ['/images/crochet-bow.webp', 'Black and cream crochet hair bow'],
   ['/images/story-portrait.webp', 'Natural straw hat with black details'],

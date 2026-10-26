@@ -80,7 +80,7 @@ try {
   await page.goto(origin + '/hair-services');
   await page.locator('#hair-title').waitFor();
   assert.equal(await page.locator('.hair-service-card').count(), 6);
-  assert.equal(await page.locator('.hair-work__gallery img').count(), 6);
+  assert.equal(await page.locator('.hair-work__gallery img').count(), 16);
   assert.equal(await page.locator('.site-footer a[href="https://hadiniholdings.co.za"]').textContent(), 'Hadini Holdings');
 
   await page.goto(origin + '/about');
@@ -260,6 +260,7 @@ try {
     if (width === 375) assert.ok(Math.abs(sizing.cardWidth - sizing.trackWidth) <= 3, 'Mobile featured cards should scroll one at a time');
   }
   assert.equal(await page.locator('.showcase-track--services .catalogue-card').count(), 6);
+  assert.equal(await page.locator('.showcase-track--services img').count(), 0);
   assert.equal(await page.locator('.campaign-hero img').getAttribute('fetchpriority'), 'high');
   assert.equal(await page.locator('.campaign-hero img').getAttribute('loading'), null);
   assert.equal(await page.locator('.hero-signature').count(), 0);

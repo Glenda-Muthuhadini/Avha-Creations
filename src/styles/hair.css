@@ -1,7 +1,7 @@
 .hair-page { background: #21170f; color: #fff3e3; overflow: clip; }
 .hair-hero { position: relative; isolation: isolate; min-height: 620px; height: clamp(620px, 82svh, 790px); display: flex; align-items: center; padding: 150px 0 120px; background: #2b1c12; overflow: hidden; }
 .hair-hero__image, .hair-hero__shade { position: absolute; inset: 0; width: 100%; height: 100%; }
-.hair-hero__image { z-index: -2; object-fit: cover; object-position: 68% 40%; }
+.hair-hero__image { z-index: -2; left: auto; width: 65%; object-fit: cover; object-position: 50% 30%; }
 .hair-hero__shade { z-index: -1; background: linear-gradient(90deg, #17100bf2 0%, #21150bcf 34%, #21150b66 57%, #160f0a16 78%, #150e0b66), linear-gradient(0deg, #1b120beb, transparent 36%); }
 .hair-hero__layout { position: relative; align-self: stretch; display: grid; grid-template-columns: minmax(0, 1fr) 190px; align-items: center; }
 .hair-hero__copy { max-width: 610px; }
@@ -11,7 +11,6 @@
 .hair-hero__copy > p:not(.eyebrow) { color: #f1dfc9; font-size: .94rem; line-height: 1.6; }
 .hair-hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
 .hair-hero__actions .button { min-height: 45px; gap: 12px; font-size: .7rem; }
-.hair-hero__signature { align-self: center; color: #f6dcbb; font: 400 2.45rem/.85 'Mrs Saint Delafield', cursive; text-align: center; transform: rotate(-8deg); text-shadow: 0 2px 15px #170d08; }
 .hair-hero__benefits { position: absolute; inset: auto 0 -120px; display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #e8c99955; background: #21170f8a; backdrop-filter: blur(12px); }
 .hair-hero__benefits > div { display: flex; align-items: center; justify-content: center; gap: 11px; padding: 14px 8px; color: #e7bf89; }
 .hair-hero__benefits > div + div { border-left: 1px solid #e4c69c32; }
@@ -68,12 +67,11 @@
 }
 @media (max-width: 699px) {
   .hair-hero { min-height: 670px; height: 82svh; max-height: 790px; align-items: end; padding: 145px 0 110px; }
-  .hair-hero__image { object-position: 62% center; }
+  .hair-hero__image { width: 100%; height: 70%; object-position: left 25%; mask-image: linear-gradient(#000 75%, transparent); }
   .hair-hero__shade { background: linear-gradient(0deg, #1c130cf5 0%, #21170edb 33%, #21170e38 78%), linear-gradient(90deg, #17100b99, transparent 100%); }
   .hair-hero__layout { grid-template-columns: 1fr; }
   .hair-hero__copy { max-width: 420px; }
   .hair-hero h1 { font-size: clamp(3rem, 12vw, 4.8rem); }
-  .hair-hero__signature { position: absolute; right: 6px; top: 5px; font-size: 2rem; }
   .hair-hero__benefits { inset: auto 0 -110px; grid-template-columns: repeat(2, 1fr); }
   .hair-hero__benefits > div { justify-content: start; padding: 11px 12px; }
   .hair-hero__benefits > div:nth-child(3) { border-left: 0; }

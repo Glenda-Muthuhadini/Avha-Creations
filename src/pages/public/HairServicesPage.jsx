@@ -9,6 +9,7 @@ import { usePageTitle } from '../../hooks/usePageTitle';
 import { useResource } from '../../hooks/useResource';
 import { listCatalogue } from '../../services/catalogue';
 import { useBusiness } from '../../context/BusinessContext';
+import { hairHero, hairPhotos, hairWorkPhotos } from '../../data/hairPhotography';
 
 const serviceDetails = {
   braids: 'Timeless protective styles, finished with care.',
@@ -25,14 +26,6 @@ const values = [
   ['sparkle', 'Experienced hands', 'Attention in every detail'],
   ['star', 'Beauty & creativity', 'Hair and accessories in one place'],
 ];
-const work = [
-  ['/images/braids.webp', 'Long, detailed braids'],
-  ['/images/cornrows.webp', 'Sculpted cornrow braids'],
-  ['/images/wig-installation.webp', 'Elegant wig styling'],
-  ['/images/hair-colour.webp', 'Warm dimensional hair colour'],
-  ['/images/hair-washing.webp', 'A relaxing hair wash'],
-  ['/images/custom-styling.webp', 'A polished custom hairstyle'],
-];
 
 export default function HairServicesPage() {
   usePageTitle('Hair artistry', 'Explore personalised hair styling, braids, colour and care by AVHA Creations.');
@@ -43,7 +36,7 @@ export default function HairServicesPage() {
 
   return <div className="hair-page">
     <section className="hair-hero" aria-labelledby="hair-title">
-      <img className="hair-hero__image" src="/images/Glamorous%20Braids%20in%20Golden%20Light.png" alt="" fetchPriority="high" />
+      <img className="hair-hero__image" src={hairHero.src} srcSet={hairHero.srcSet} sizes="(min-width: 700px) 65vw, 100vw" alt={hairHero.alt} width="1254" height="1254" fetchPriority="high" />
       <div className="hair-hero__shade" />
       <div className="container hair-hero__layout">
         <div className="hair-hero__copy">
@@ -55,7 +48,6 @@ export default function HairServicesPage() {
             <a className="button button--outline" href="#hair-services-list">Explore services</a>
           </div>
         </div>
-        <p className="hair-hero__signature" aria-hidden="true">Beautiful<br />Hair.<br />Your Style.</p>
         <div className="hair-hero__benefits" aria-label="The AVHA hair experience">
           <div><Icon name="diamond" size={25} /><span>Quality care<br />for your hair</span></div>
           <div><Icon name="flower" size={25} /><span>Style for<br />every occasion</span></div>
@@ -76,7 +68,7 @@ export default function HairServicesPage() {
     </section>
 
     <section className="hair-confidence" aria-labelledby="hair-confidence-title">
-      <img className="hair-confidence__image" src="/images/custom-styling.webp" alt="A beautifully finished custom hairstyle" loading="lazy" />
+      <img className="hair-confidence__image" src={hairPhotos.multitoneLocs.src} srcSet={hairPhotos.multitoneLocs.srcSet} sizes="100vw" alt={hairPhotos.multitoneLocs.alt} loading="lazy" />
       <div className="hair-confidence__shade" />
       <div className="container hair-confidence__layout">
         <div className="hair-confidence__copy"><p className="eyebrow">More than a style</p><h2 id="hair-confidence-title">Healthy hair.<br /><em>Lasting confidence.</em></h2><p>We combine skill, creativity and care to give you styles that feel good, look beautiful and feel good to wear.</p><Button to="/contact">Learn more about our hair artistry <Icon name="arrow" size={16} /></Button></div>
@@ -90,7 +82,7 @@ export default function HairServicesPage() {
           <div><p className="eyebrow">A look at some of our recent styles and transformations</p><h2 id="hair-work-title">Our Work</h2></div>
           <a className="button button--outline" href={settings.instagram_url} target="_blank" rel="noreferrer"><Icon name="instagram" size={17} />Follow us on Instagram</a>
         </header>
-        <div className="hair-work__gallery" role="region" aria-label="Hair artistry gallery, scroll for more" tabIndex={0}>{work.map(([src, alt]) => <a key={src} href={settings.instagram_url} target="_blank" rel="noreferrer" aria-label={`${alt} — visit AVHA on Instagram`}><img src={src} alt={alt} loading="lazy" /><span><Icon name="instagram" size={22} /></span></a>)}</div>
+        <div className="hair-work__gallery" role="region" aria-label="Hair artistry gallery, scroll for more" tabIndex={0}>{hairWorkPhotos.map(({ src, srcSet, alt }) => <a key={src} href={settings.instagram_url} target="_blank" rel="noreferrer" aria-label={`${alt} — visit AVHA on Instagram`}><img src={src} srcSet={srcSet} sizes="(min-width: 1024px) 16vw, (min-width: 700px) 25vw, 42vw" alt={alt} loading="lazy" /><span><Icon name="instagram" size={22} /></span></a>)}</div>
       </div>
     </section>
   </div>;
@@ -99,7 +91,7 @@ export default function HairServicesPage() {
 function HairServiceCard({ service }) {
   const to = service.preview ? `/contact?service=${encodeURIComponent(service.name)}` : `/hair-services/${service.slug}`;
   return <article className="hair-service-card"><Link to={to} aria-label={`${service.name} — enquire`}>
-    {service.images?.[0] ? <img src={service.images[0]} alt="" loading="lazy" /> : <div className="hair-service-card__fallback" aria-hidden="true"><Icon name="sparkle" size={32} /></div>}
+    {service.images?.[0] ? <img src={service.images[0]} srcSet={service.image_srcset} sizes="(min-width: 1024px) 16vw, (min-width: 700px) 33vw, 50vw" alt={service.image_alt || service.name} loading="lazy" /> : <div className="hair-service-card__fallback" aria-hidden="true"><Icon name="sparkle" size={32} /></div>}
     <span className="hair-service-card__shade" />
     <span className="hair-service-card__copy"><strong>{service.name}</strong><small>{serviceDetails[service.slug] || 'A personalised style, thoughtfully created just for you.'}</small></span>
     <span className="hair-service-card__arrow"><Icon name="arrow" size={16} /></span>

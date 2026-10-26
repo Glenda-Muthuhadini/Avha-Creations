@@ -88,7 +88,11 @@
 .catalogue-card--editorial .card-content { position: absolute; inset: auto 0 0; padding: 42px 10px 15px; background: linear-gradient(transparent, #160f0be6); text-align: center; }
 .catalogue-card--editorial h3 { font: 500 .8rem/1.3 'DM Sans', sans-serif; margin: 0; }
 .catalogue-card--editorial:hover img { transform: scale(1.04); }
-.showcase-track--services { grid-auto-columns: 57%; }
+.showcase-track--services { grid-auto-columns: 80%; }
+.catalogue-card--service-text { border: 1px solid #ddc3a25c; background: linear-gradient(145deg, #503820, #2b1e14); border-radius: 11px; }
+.catalogue-card--service-text > a { display: flex; align-items: center; justify-content: center; height: 100%; min-height: 175px; padding: 24px 16px; text-align: center; }
+.catalogue-card--service-text h3 { margin: 0; font-family: var(--serif); font-size: clamp(1.4rem, 2.1vw, 1.9rem); font-weight: 500; line-height: 1.15; text-transform: uppercase; letter-spacing: .02em; overflow-wrap: normal; }
+.catalogue-card--service-text:hover, .catalogue-card--service-text:focus-within { border-color: var(--gold); background: linear-gradient(145deg, #65462b, #352418); }
 .preview-caption { font-size: .63rem; color: #cdbda8; margin: 3px 0 0; line-height: 1.6; }
 .hair-preview { border-top: 1px solid #d3af7c2b; margin-top: 28px; padding-top: 30px; }
 
@@ -155,7 +159,7 @@
   .journey-card__copy { padding: 24px; }
   .showcase-track { grid-auto-columns: 30%; }
   .showcase-track--products { grid-auto-columns: 48%; }
-  .showcase-track--services { grid-auto-columns: 28%; }
+  .showcase-track--services { grid-auto-flow: row; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .social-gallery__track { grid-auto-columns: 28%; }
   .brand-benefits__grid { grid-template-columns: repeat(4, 1fr); }
   .brand-benefits__grid > div + div { border-left: 1px solid #e1c19c24; }
@@ -205,7 +209,7 @@
   .journey-card:nth-child(2) > img { object-position: 70% 40%; }
   .showcase-track { grid-auto-columns: calc((100% - 64px) / 5); gap: 16px; }
   .showcase-track--products { grid-auto-columns: calc((100% - 64px) / 5); }
-  .showcase-track--services { grid-auto-columns: calc((100% - 80px) / 6); }
+  .showcase-track--services { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .catalogue-card--showcase .card-content { padding-block: 14px; }
   .catalogue-card--showcase h3 { font-size: .78rem; }
   .catalogue-card--showcase .price { font-size: .73rem; }
